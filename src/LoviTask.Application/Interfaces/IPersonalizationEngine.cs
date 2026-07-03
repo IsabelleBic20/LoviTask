@@ -7,5 +7,6 @@ public interface IPersonalizationEngine
 {
     void TrackEvent(UserActivityEvent activityEvent);
     CognitiveProfile BuildCognitiveProfile();
+    PersonalizationMetrics BuildPersonalizationMetrics();
     Recommendation[] GenerateRecommendations();
 }

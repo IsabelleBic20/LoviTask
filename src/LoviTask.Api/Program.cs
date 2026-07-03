@@ -16,6 +16,8 @@ builder.Services.AddDbContext<LoviTaskDbContext>(options =>
 
 builder.Services.AddScoped<IBehaviorRepository, EfBehaviorRepository>();
 builder.Services.AddSingleton<IBrainDumpAiProvider, BrainDumpAiProvider>();
+builder.Services.AddSingleton<IBrainDumpAnalyzer, BrainDumpAnalyzer>();
+builder.Services.AddScoped<IPersonalizationMetricsProvider, PersonalizationMetricsProvider>();
 builder.Services.AddScoped<IPersonalizationEngine, PersonalizationEngine>();
 
 var app = builder.Build();
