@@ -1,0 +1,50 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "LoviTask.Infrastructure/1.0.0": {
+        "dependencies": {
+          "LoviTask.Application": "1.0.0",
+          "LoviTask.Domain": "1.0.0"
+        },
+        "runtime": {
+          "LoviTask.Infrastructure.dll": {}
+        }
+      },
+      "LoviTask.Application/1.0.0": {
+        "dependencies": {
+          "LoviTask.Domain": "1.0.0"
+        },
+        "runtime": {
+          "LoviTask.Application.dll": {}
+        }
+      },
+      "LoviTask.Domain/1.0.0": {
+        "runtime": {
+          "LoviTask.Domain.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "LoviTask.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "LoviTask.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "LoviTask.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

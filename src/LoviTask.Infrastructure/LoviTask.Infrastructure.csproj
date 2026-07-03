@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LoviTask.Application\LoviTask.Application.csproj" />
+    <ProjectReference Include="..\LoviTask.Domain\LoviTask.Domain.csproj" />
+  </ItemGroup>
+</Project>

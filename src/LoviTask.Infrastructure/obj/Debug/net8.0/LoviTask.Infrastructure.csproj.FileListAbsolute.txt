@@ -1,0 +1,17 @@
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/bin/Debug/net8.0/LoviTask.Infrastructure.deps.json
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/bin/Debug/net8.0/LoviTask.Infrastructure.dll
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/bin/Debug/net8.0/LoviTask.Infrastructure.pdb
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/bin/Debug/net8.0/LoviTask.Application.dll
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/bin/Debug/net8.0/LoviTask.Domain.dll
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/bin/Debug/net8.0/LoviTask.Application.pdb
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/bin/Debug/net8.0/LoviTask.Domain.pdb
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/obj/Debug/net8.0/LoviTask.Infrastructure.csproj.AssemblyReference.cache
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/obj/Debug/net8.0/LoviTask.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/obj/Debug/net8.0/LoviTask.Infrastructure.AssemblyInfoInputs.cache
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/obj/Debug/net8.0/LoviTask.Infrastructure.AssemblyInfo.cs
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/obj/Debug/net8.0/LoviTask.Infrastructure.csproj.CoreCompileInputs.cache
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/obj/Debug/net8.0/LoviTask.Infrastructure.csproj.CopyComplete
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/obj/Debug/net8.0/LoviTask.Infrastructure.dll
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/obj/Debug/net8.0/refint/LoviTask.Infrastructure.dll
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/obj/Debug/net8.0/LoviTask.Infrastructure.pdb
+/home/isabelle/projects/LoviTask/src/LoviTask.Infrastructure/obj/Debug/net8.0/ref/LoviTask.Infrastructure.dll

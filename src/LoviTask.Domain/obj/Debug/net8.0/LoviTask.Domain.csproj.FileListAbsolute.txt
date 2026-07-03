@@ -1,0 +1,11 @@
+/home/isabelle/projects/LoviTask/src/LoviTask.Domain/bin/Debug/net8.0/LoviTask.Domain.deps.json
+/home/isabelle/projects/LoviTask/src/LoviTask.Domain/bin/Debug/net8.0/LoviTask.Domain.dll
+/home/isabelle/projects/LoviTask/src/LoviTask.Domain/bin/Debug/net8.0/LoviTask.Domain.pdb
+/home/isabelle/projects/LoviTask/src/LoviTask.Domain/obj/Debug/net8.0/LoviTask.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/home/isabelle/projects/LoviTask/src/LoviTask.Domain/obj/Debug/net8.0/LoviTask.Domain.AssemblyInfoInputs.cache
+/home/isabelle/projects/LoviTask/src/LoviTask.Domain/obj/Debug/net8.0/LoviTask.Domain.AssemblyInfo.cs
+/home/isabelle/projects/LoviTask/src/LoviTask.Domain/obj/Debug/net8.0/LoviTask.Domain.csproj.CoreCompileInputs.cache
+/home/isabelle/projects/LoviTask/src/LoviTask.Domain/obj/Debug/net8.0/LoviTask.Domain.dll
+/home/isabelle/projects/LoviTask/src/LoviTask.Domain/obj/Debug/net8.0/refint/LoviTask.Domain.dll
+/home/isabelle/projects/LoviTask/src/LoviTask.Domain/obj/Debug/net8.0/LoviTask.Domain.pdb
+/home/isabelle/projects/LoviTask/src/LoviTask.Domain/obj/Debug/net8.0/ref/LoviTask.Domain.dll

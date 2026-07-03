@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "L/H6FOdV+5FQhvH4S/uB2xb4JeddL4pBlnDCcaXNc1Gsr3iLXdBD2W3s8l8F9N04n5PHfCNXs5hS8ug+7Xn58w==",
+  "success": true,
+  "projectFilePath": "/home/isabelle/projects/LoviTask/src/LoviTask.Api/LoviTask.Api.csproj",
+  "expectedPackageFiles": [
+    "/home/isabelle/.nuget/packages/microsoft.extensions.apidescription.server/6.0.5/microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
+    "/home/isabelle/.nuget/packages/microsoft.openapi/1.6.14/microsoft.openapi.1.6.14.nupkg.sha512",
+    "/home/isabelle/.nuget/packages/swashbuckle.aspnetcore/6.7.0/swashbuckle.aspnetcore.6.7.0.nupkg.sha512",
+    "/home/isabelle/.nuget/packages/swashbuckle.aspnetcore.swagger/6.7.0/swashbuckle.aspnetcore.swagger.6.7.0.nupkg.sha512",
+    "/home/isabelle/.nuget/packages/swashbuckle.aspnetcore.swaggergen/6.7.0/swashbuckle.aspnetcore.swaggergen.6.7.0.nupkg.sha512",
+    "/home/isabelle/.nuget/packages/swashbuckle.aspnetcore.swaggerui/6.7.0/swashbuckle.aspnetcore.swaggerui.6.7.0.nupkg.sha512"
+  ],
+  "logs": []
+}
