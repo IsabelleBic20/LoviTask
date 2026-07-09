@@ -1,5 +1,5 @@
+using LoviTask.Application.Interfaces;
 using LoviTask.Domain.Events;
-using LoviTask.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LoviTask.Api.Controllers;

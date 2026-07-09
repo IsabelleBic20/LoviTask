@@ -9,22 +9,78 @@ Este projeto apresenta um módulo central chamado **Assistente Cognitivo Adaptat
 O Assistente Cognitivo Adaptativo vai além da gestão de tarefas:
 - aprende continuamente como o usuário funciona;
 - identifica padrões de comportamento;
-- personaliza recomendações sem linguagem julgadora;
+- personaliza recomendações sem linguagem acolhedora e eficaz;
 - reduz sobrecarga mental;
 - incentiva pequenas vitórias;
 - prepara o sistema para evolução futura com Machine Learning.
 
-### Arquitetura inicial
+## Arquitetura do Projeto
 
-A arquitetura definida aqui contempla:
-- `Personalization Engine` para coletar eventos, registrar padrões e gerar recomendações;
-- `Perfil Cognitivo` para armazenar e expor informações sobre produtividade, humor, energia e hábitos;
-- `Infrastructure` para futuros serviços de IA e persistência;
-- `Api` para expor endpoints e orquestrar o fluxo.
+O projeto é dividido em camadas:
+- `Api`: interface HTTP, Swagger e orquestração.
+- `Application`: lógica de personalização e regras de negócio.
+- `Domain`: entidades, modelos e contratos centrais.
+- `Infrastructure`: provedores de armazenamento, IA e repositórios.
 
-### Próximos passos
+## Documentação da API
 
-1. Integrar coleta de eventos do usuário e ações de tarefas.
-2. Construir o perfil cognitivo incrementalmente.
-3. Conectar um mecanismo de IA para interpretação de Brain Dumps.
-4. Evoluir para modelos preditivos e experimentos acadêmicos.
+A API está documentada via Swagger.
+- rota de documentação: `/swagger`
+- versão: `v1`
+- título: `LoviTask API`
+- descrição: `API para personalização cognitiva, métricas de produtividade e Brain Dump inteligente com metas e prazos.`
+
+### Endpoints principais
+
+#### Brain Dump
+- `POST /api/BrainDump/analyze`
+- request body:
+  - `Text` (string) — texto do Brain Dump
+  - `Goal` (string, opcional) — meta vinculada ao Brain Dump
+  - `Deadline` (DateTime, opcional) — prazo para conclusão
+- resposta: lista de `MicrotaskSuggestion` com `Title`, `Description` e `Priority`
+
+#### Personalização
+- `POST /api/Personalization/events` — grava eventos de atividade do usuário
+- `GET /api/Personalization/profile` — consulta o perfil cognitivo do usuário
+- `GET /api/Personalization/recommendations` — obtém recomendações personalizadas
+
+#### Métricas e eventos
+- `GET /api/Metrics` — retorna métricas de produtividade e procrastinação
+- `GET /api/Events` — lista eventos registrados
+
+## Uso
+
+### Pré-requisitos
+
+- .NET 8 SDK
+- SQLite (usado localmente pelo projeto)
+
+### Executar localmente
+
+```bash
+cd /home/isabelle/projects/LoviTask
+dotnet run --project src/LoviTask.Api/LoviTask.Api.csproj
+```
+
+### Testes
+
+```bash
+dotnet test src/LoviTask.Tests/LoviTask.Tests.csproj --no-restore
+```
+
+## Evolução atual
+
+Esse projeto já suporta:
+- análise de Brain Dump com microtarefas inteligentes;
+- prioridade dinâmica baseada em urgência, prazo e objetivos;
+- persistência via SQLite;
+- geração de perfil cognitivo e métricas personalizadas;
+- documentação Swagger com comentários XML.
+
+## Próximos passos
+
+1. Integrar mais fontes de eventos do usuário.
+2. Criar dashboards de comportamento em tempo real.
+3. Adicionar recursos de aprendizado incremental e recomendação preditiva.
+4. Implementar autenticação e múltiplos usuários.

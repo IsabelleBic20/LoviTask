@@ -1,59 +1,171 @@
 using LoviTask.Application.Interfaces;
+using LoviTask.Application.Models;
 using LoviTask.Domain.Models;
 
 namespace LoviTask.Infrastructure.Services;
 
 public class BrainDumpAnalyzer : IBrainDumpAnalyzer
 {
-    public MicrotaskSuggestion[] AnalyzeBrainDump(string brainDumpText)
+    private static readonly string[] HighPriorityKeywords =
     {
-        if (string.IsNullOrWhiteSpace(brainDumpText))
+        "urgente", "agora", "hoje", "imediato", "crítico", "prioridade", "preciso"
+    };
+
+    private static readonly string[] LowPriorityKeywords =
+    {
+        "depois", "mais tarde", "fim de semana", "quando puder", "um dia", "mais adiante"
+    };
+
+    public MicrotaskSuggestion[] AnalyzeBrainDump(BrainDumpContext context)
+    {
+        if (context is null || string.IsNullOrWhiteSpace(context.Text))
         {
-            return Array.Empty<MicrotaskSuggestion>();
+            return new[]
+            {
+                new MicrotaskSuggestion
+                {
+                    Title = "Revisar o Brain Dump",
+                    Description = "Tente transformar seu texto em pelo menos uma ação concreta.",
+                    Priority = "Média"
+                }
+            };
         }
 
-        var lines = brainDumpText
+        var ideas = ExtractIdeas(context.Text);
+        if (!ideas.Any())
+        {
+            return new[]
+            {
+                new MicrotaskSuggestion
+                {
+                    Title = "Revisar o Brain Dump",
+                    Description = "Tente transformar seu texto em pelo menos uma ação concreta.",
+                    Priority = "Média"
+                }
+            };
+        }
+
+        return ideas
+            .Select(idea => CreateSuggestion(idea, context))
+            .ToArray();
+    }
+
+    private static string[] ExtractIdeas(string brainDumpText)
+    {
+        return brainDumpText
             .Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+            .SelectMany(line => line.Split(new[] { '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries))
             .Select(line => line.Trim())
             .Where(line => line.Length > 0)
             .ToArray();
+    }
 
-        var suggestions = new List<MicrotaskSuggestion>();
+    private static MicrotaskSuggestion CreateSuggestion(string idea, BrainDumpContext context)
+    {
+        var title = SummarizeTitle(idea);
+        var priority = DeterminePriority(idea, context.Deadline);
+        var description = BuildDescription(idea, priority, context.Goal, context.Deadline);
 
-        foreach (var line in lines)
+        return new MicrotaskSuggestion
         {
-            if (line.Length < 20)
+            Title = title,
+            Description = description,
+            Priority = priority
+        };
+    }
+
+    private static string SummarizeTitle(string idea)
+    {
+        var cleaned = idea.Trim();
+        if (cleaned.Length <= 60)
+        {
+            return cleaned;
+        }
+
+        return cleaned[..60] + "...";
+    }
+
+    private static string DeterminePriority(string idea, DateTime? deadline)
+    {
+        var normalized = idea.ToLowerInvariant();
+
+        if (HighPriorityKeywords.Any(keyword => normalized.Contains(keyword, StringComparison.OrdinalIgnoreCase)))
+        {
+            return "Alta";
+        }
+
+        if (deadline.HasValue)
+        {
+            var daysUntilDeadline = (deadline.Value.Date - DateTime.UtcNow.Date).TotalDays;
+            if (daysUntilDeadline < 0)
             {
-                suggestions.Add(new MicrotaskSuggestion
-                {
-                    Title = line,
-                    Description = "Transforme isso em uma pequena ação prática.",
-                    Priority = "Média"
-                });
+                return "Alta";
             }
-            else
+
+            if (daysUntilDeadline <= 2)
             {
-                suggestions.Add(new MicrotaskSuggestion
-                {
-                    Title = line.Length > 60 ? line[..60] + "..." : line,
-                    Description = "Divida esta ideia em um passo específico e de curto prazo.",
-                    Priority = line.Contains("urgente", StringComparison.OrdinalIgnoreCase)
-                        ? "Alta"
-                        : "Média"
-                });
+                return "Alta";
+            }
+
+            if (daysUntilDeadline <= 7)
+            {
+                return "Média";
             }
         }
 
-        if (!suggestions.Any())
+        if (LowPriorityKeywords.Any(keyword => normalized.Contains(keyword, StringComparison.OrdinalIgnoreCase)))
         {
-            suggestions.Add(new MicrotaskSuggestion
-            {
-                Title = "Revisar o Brain Dump",
-                Description = "Tente transformar seu texto em pelo menos uma ação concreta.",
-                Priority = "Média"
-            });
+            return "Baixa";
         }
 
-        return suggestions.ToArray();
+        if (normalized.Contains("amanhã", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Contains("hoje à tarde", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Contains("esta semana", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Média";
+        }
+
+        return "Média";
+    }
+
+    private static string BuildDescription(string idea, string priority, string? goal, DateTime? deadline)
+    {
+        var baseDescription = priority switch
+        {
+            "Alta" => "Comece por isso agora para reduzir a carga mental. Identifique o primeiro passo e execute-o em seguida.",
+            "Baixa" => "Planeje esta atividade para um momento mais tranquilo. Divida em um passo simples antes de agendar.",
+            _ => "Transforme esta ideia em um passo curto e específico para manter o fluxo de trabalho consistente."
+        };
+
+        var addedContext = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(goal))
+        {
+            addedContext.Add($"Este passo avança a meta \"{goal}\".");
+        }
+
+        if (deadline.HasValue)
+        {
+            var daysUntilDeadline = (deadline.Value.Date - DateTime.UtcNow.Date).TotalDays;
+            if (daysUntilDeadline < 0)
+            {
+                addedContext.Add("O prazo já passou; priorize imediatamente.");
+            }
+            else if (daysUntilDeadline <= 2)
+            {
+                addedContext.Add("O prazo está próximo, trate como prioridade alta.");
+            }
+            else if (daysUntilDeadline <= 7)
+            {
+                addedContext.Add("Prazo próximo, mantenha o ritmo consistente para chegar a tempo.");
+            }
+        }
+
+        if (!addedContext.Any())
+        {
+            return baseDescription;
+        }
+
+        return baseDescription + " " + string.Join(" ", addedContext);
     }
 }
