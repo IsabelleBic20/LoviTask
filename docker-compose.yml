@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: lovitask-backend
     ports:
       - "${APP_PORT}:5000"
     environment:
@@ -13,6 +14,24 @@ services:
       - DEBUG_MODE=${DEBUG_MODE}
     volumes:
       - lovitask-data:/app/data
+    networks:
+      - lovitask-network
+    
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lovitask-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+    networks:
+      - lovitask-network
 
 volumes:
   lovitask-data:
+
+networks:
+  lovitask-network:
+    driver: bridge

@@ -85,6 +85,37 @@ Esse projeto já suporta:
 3. Adicionar recursos de aprendizado incremental e recomendação preditiva.
 4. Implementar autenticação e múltiplos usuários.
 
+## Frontend
+
+O frontend é uma aplicação React + TypeScript + Vite localizada em `frontend/`.
+
+### Setup
+
+```bash
+cd frontend
+npm install
+cp .env.example .env
+```
+
+### Desenvolvimento
+
+```bash
+npm run dev
+```
+
+Frontend estará disponível em `http://localhost:3000` e conecta à API em `http://localhost:5000`.
+
+### Build
+
+```bash
+npm run build
+```
+
+A aplicação inclui:
+- **Brain Dump** — análise inteligente de pensamentos e geração de microtarefas
+- **Métricas** — visualização de produtividade e procrastinação
+- **Perfil Cognitivo** — compreensão de padrões e recomendações personalizadas
+
 ## Execução em Docker
 
 ### Pré-requisitos
@@ -92,26 +123,57 @@ Esse projeto já suporta:
 - Docker
 - Docker Compose
 
-### Como usar
+### Docker Compose (Backend + Frontend)
+
+Executa backend (API) e frontend (React + Nginx) simultaneamente:
 
 ```bash
 cd /home/isabelle/projects/LoviTask
 docker compose up --build
 ```
 
-O serviço será exposto em `http://localhost:5000`.
+**Acesso:**
+- Frontend: `http://localhost` (porta 80)
+- API Backend: `http://localhost:5000`
+- Swagger: `http://localhost/swagger`
 
-### Variáveis de ambiente e .env
+O frontend funciona com nginx, que:
+- Serve os arquivos estáticos (React build)
+- Faz proxy automático das chamadas `/api/*` para o backend
+- Suporta SPA routing (qualquer rota desconhecida volta para `index.html`)
 
-O `docker-compose.yml` usa o arquivo `.env` para definir:
-- `ASPNETCORE_ENVIRONMENT=Development`
-- `LOVITASK_DATABASE_PATH=/app/data/lovitask.db`
+### Variáveis de ambiente (.env)
 
-### Alternativa sem Compose
+```
+# Backend
+APP_ENV=development
+APP_PORT=5000
+DB_PATH=/app/data/lovitask.db
+DEBUG_MODE=true
+
+# Frontend
+FRONTEND_PORT=80
+```
+
+### Backend apenas (sem Docker Compose)
 
 ```bash
 docker build -t lovitask-api .
-docker run -p 5000:5000 -e ASPNETCORE_ENVIRONMENT=Development -e LOVITASK_DATABASE_PATH=/app/data/lovitask.db -v "$PWD/data:/app/data" lovitask-api
+docker run -p 5000:5000 \
+  -e APP_ENV=development \
+  -e DB_PATH=/app/data/lovitask.db \
+  -v "$PWD/data:/app/data" \
+  lovitask-api
 ```
 
-A documentação Swagger ficará disponível em `http://localhost:5000/swagger`.
+### Parar serviços
+
+```bash
+docker compose down
+```
+
+### Remover tudo (incluindo volumes)
+
+```bash
+docker compose down -v
+```
