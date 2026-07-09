@@ -84,3 +84,34 @@ Esse projeto já suporta:
 2. Criar dashboards de comportamento em tempo real.
 3. Adicionar recursos de aprendizado incremental e recomendação preditiva.
 4. Implementar autenticação e múltiplos usuários.
+
+## Execução em Docker
+
+### Pré-requisitos
+
+- Docker
+- Docker Compose
+
+### Como usar
+
+```bash
+cd /home/isabelle/projects/LoviTask
+docker compose up --build
+```
+
+O serviço será exposto em `http://localhost:5000`.
+
+### Variáveis de ambiente e .env
+
+O `docker-compose.yml` usa o arquivo `.env` para definir:
+- `ASPNETCORE_ENVIRONMENT=Development`
+- `LOVITASK_DATABASE_PATH=/app/data/lovitask.db`
+
+### Alternativa sem Compose
+
+```bash
+docker build -t lovitask-api .
+docker run -p 5000:5000 -e ASPNETCORE_ENVIRONMENT=Development -e LOVITASK_DATABASE_PATH=/app/data/lovitask.db -v "$PWD/data:/app/data" lovitask-api
+```
+
+A documentação Swagger ficará disponível em `http://localhost:5000/swagger`.

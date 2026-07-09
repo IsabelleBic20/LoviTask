@@ -19,6 +19,16 @@ obj/
 *.nupkg
 packages/
 
+# Environment and secrets
+.env
+.env.*
+**/.env
+appsettings.*.json
+**/appsettings.*.json
+secrets.json
+*.usersecrets
+secrets.*
+
 # Rider
 .idea/
 *.sln.iml
@@ -26,3 +36,5 @@ packages/
 # OS Files
 .DS_Store
 Thumbs.db
+
+.env

@@ -25,8 +25,13 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(xmlPath);
 });
 
+var dbPath = builder.Configuration["DB_PATH"] ?? builder.Configuration["LOVITASK_DATABASE_PATH"];
+var connectionString = !string.IsNullOrWhiteSpace(dbPath)
+    ? $"Data Source={dbPath}"
+    : builder.Configuration.GetConnectionString("LoviTaskDatabase");
+
 builder.Services.AddDbContext<LoviTaskDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("LoviTaskDatabase")));
+    options.UseSqlite(connectionString));
 
 builder.Services.AddScoped<IBehaviorRepository, EfBehaviorRepository>();
 builder.Services.AddSingleton<IBrainDumpAiProvider, BrainDumpAiProvider>();
