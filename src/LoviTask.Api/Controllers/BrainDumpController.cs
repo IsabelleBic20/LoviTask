@@ -1,12 +1,14 @@
 using LoviTask.Application.Interfaces;
 using LoviTask.Application.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LoviTask.Api.Controllers;
 
 /// <summary>
 /// Controlador que processa Brain Dumps e gera microtarefas inteligentes.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class BrainDumpController : ControllerBase

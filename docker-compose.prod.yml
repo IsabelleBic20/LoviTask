@@ -13,6 +13,7 @@ services:
       - ASPNETCORE_URLS=http://+:5000
       - DB_PATH=/app/data/lovitask.db
       - DEBUG_MODE=false
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     deploy:
       resources:
         limits:

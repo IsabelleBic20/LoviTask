@@ -1,9 +1,11 @@
 using LoviTask.Application.Interfaces;
 using LoviTask.Domain.Events;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LoviTask.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class PersonalizationController : ControllerBase

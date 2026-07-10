@@ -17,7 +17,25 @@ const api = axios.create({
   },
 });
 
+// Interceptor para anexar o token JWT às requisições
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('lovitask_jwt') || sessionStorage.getItem('lovitask_jwt');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export const loviTaskAPI = {
+  // Autenticação
+  login: (email: string, password: string): Promise<{ token: string; email: string; expiresAt: string }> =>
+    api.post('/Auth/login', { email, password }).then((res) => res.data),
+
   // Brain Dump
   analyzeBrainDump: (request: BrainDumpRequest): Promise<MicrotaskSuggestion[]> =>
     api.post('/BrainDump/analyze', request).then((res) => res.data),
