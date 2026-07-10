@@ -27,10 +27,11 @@ public class EfBehaviorRepository : IBehaviorRepository
         _dbContext.SaveChanges();
     }
 
-    public IReadOnlyList<UserActivityEvent> GetEvents()
+    public IReadOnlyList<UserActivityEvent> GetEvents(string userId)
     {
         return _dbContext.UserActivityEvents
             .AsNoTracking()
+            .Where(e => e.UserId == userId)
             .OrderBy(e => e.Timestamp)
             .ToList();
     }

@@ -20,7 +20,11 @@ public class EventsController : ControllerBase
     [HttpGet]
     public IActionResult GetEvents()
     {
-        var events = _behaviorRepository.GetEvents();
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value 
+                     ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value 
+                     ?? User.Identity?.Name 
+                     ?? "default-user";
+        var events = _behaviorRepository.GetEvents(userId);
         return Ok(events);
     }
 }

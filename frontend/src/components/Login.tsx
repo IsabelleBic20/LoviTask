@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { loviTaskAPI } from '../services/api';
 
 interface LoginProps {
@@ -19,6 +20,14 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, theme, setTheme })
     setTheme(newTheme);
     localStorage.setItem('lovitask_theme', newTheme);
   };
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
@@ -61,83 +70,112 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, theme, setTheme })
   };
 
   return (
-    <div className={`relative min-h-screen flex flex-col items-center justify-center transition-colors duration-300 px-4 overflow-hidden ${
-      isDarkMode ? 'bg-playful-dark text-white' : 'bg-playful-light text-slate-800'
+    <div className={`relative min-h-screen flex flex-col items-center justify-center transition-colors duration-500 px-4 overflow-hidden ${
+      isDarkMode ? 'bg-brand-dark text-white' : 'bg-brand-light text-slate-800'
     }`}>
       
-      {/* Decorative Floating Blobs */}
-      <div className={`absolute top-[-100px] left-[10%] w-[350px] h-[350px] rounded-full blur-[100px] pointer-events-none transition-opacity duration-500 ${
-        isDarkMode ? 'bg-indigo-900/10' : 'bg-indigo-500/5'
-      }`} />
-      <div className={`absolute bottom-[-100px] right-[10%] w-[350px] h-[350px] rounded-full blur-[100px] pointer-events-none transition-opacity duration-500 ${
-        isDarkMode ? 'bg-purple-900/10' : 'bg-purple-500/5'
-      }`} />
+      {/* Decorative Ambient Blobs */}
+      <div className="absolute top-[-100px] left-[5%] w-[450px] h-[450px] rounded-full bg-gradient-to-br from-indigo-400/25 to-purple-500/5 blur-[120px] pointer-events-none ambient-glow" />
+      <div className="absolute bottom-[-150px] right-[5%] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-purple-400/20 to-pink-500/5 blur-[130px] pointer-events-none ambient-glow" />
 
-      {/* Floating shape items (Finch/Duolingo style background decor) */}
-      <div className="absolute top-[20%] right-[15%] text-indigo-400/20 text-3xl select-none pointer-events-none font-bold animate-bounce-slow">✦</div>
-      <div className="absolute bottom-[20%] left-[15%] text-purple-400/20 text-2xl select-none pointer-events-none font-bold animate-bounce-slow" style={{ animationDelay: '1s' }}>○</div>
+      {/* Floating shape items (calming background decor) */}
+      <motion.div 
+        animate={{ y: [0, -10, 0], rotate: [0, 10, 0] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-[20%] right-[12%] text-indigo-400/30 text-3xl select-none pointer-events-none font-bold"
+      >
+        ✦
+      </motion.div>
+      <motion.div 
+        animate={{ y: [0, 8, 0], scale: [1, 1.05, 1] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        className="absolute bottom-[22%] left-[12%] text-purple-400/25 text-2xl select-none pointer-events-none font-bold"
+      >
+        ○
+      </motion.div>
 
       {/* Floating Theme Switcher */}
       <div className="absolute top-6 right-6 z-20">
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={toggleTheme}
-          className={`p-3 rounded-2xl border transition-all duration-200 ${
+          className={`p-3 rounded-2xl border transition-all duration-300 ${
             isDarkMode 
-              ? 'bg-slate-900/80 border-slate-800 text-amber-400 hover:bg-slate-850' 
-              : 'bg-white border-slate-200 text-indigo-600 hover:bg-slate-50 shadow-md'
+              ? 'bg-slate-900/80 border-slate-800/85 text-amber-400 hover:bg-slate-850' 
+              : 'bg-white border-slate-200/90 text-indigo-600 hover:bg-slate-50 shadow-sm'
           }`}
           title={isDarkMode ? "Mudar para Modo Claro" : "Mudar para Modo Escuro"}
           aria-label="Alternar tema de acessibilidade"
         >
           {isDarkMode ? '☀️' : '🌙'}
-        </button>
+        </motion.button>
       </div>
 
-      {/* Login Card */}
-      <div className="w-full max-w-md relative z-10">
-        <div className={`border rounded-[28px] p-8 shadow-2xl transition-all duration-300 text-center ${
-          isDarkMode ? 'bg-slate-900/60 border-slate-800/80 shadow-slate-950/60' : 'bg-white border-indigo-100 shadow-indigo-100/50'
+      {/* Login Card Container */}
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md relative z-10"
+      >
+        <div className={`border rounded-[32px] p-8 shadow-xl transition-all duration-300 text-center ${
+          isDarkMode 
+            ? 'bg-brand-cardDark/65 border-slate-800/60 shadow-slate-950/20 backdrop-blur-md' 
+            : 'bg-white border-indigo-100/40 shadow-indigo-100/20 backdrop-blur-md'
         }`}>
           
           {/* Header & Logo */}
-          <div className="mb-6 flex flex-col items-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-[20px] bg-gradient-to-tr from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/25 mb-4 animate-bounce-slow">
-              <span className="text-4xl">🧠</span>
-            </div>
+          <div className="mb-8 flex flex-col items-center">
+            <motion.div 
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="inline-flex items-center justify-center w-20 h-20 rounded-[24px] bg-gradient-to-tr from-indigo-500 to-purple-600 shadow-md shadow-indigo-500/20 mb-5"
+            >
+              <span className="text-4xl select-none">🧠</span>
+            </motion.div>
             <h1 className={`text-3xl font-black tracking-tight leading-none ${
               isDarkMode ? 'text-white' : 'text-slate-800'
             }`}>
               LoviTask
             </h1>
-            <p className={`mt-2.5 text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
-              🌱 Companheiro Cognitivo Adaptativo
+            <p className={`mt-2 text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
+              ✨ Companheiro Cognitivo Adaptativo
             </p>
           </div>
 
           {/* speech bubble mascot */}
-          <div className={`p-4 rounded-[20px] text-xs font-semibold leading-relaxed border relative mb-6 text-left ${
-            isDarkMode ? 'bg-slate-950 border-slate-900 text-slate-300' : 'bg-indigo-50/50 border-indigo-100/60 text-slate-700'
+          <div className={`p-4 rounded-[22px] text-xs font-semibold leading-relaxed border relative mb-8 text-left ${
+            isDarkMode 
+              ? 'bg-slate-950/60 border-slate-900/80 text-slate-300' 
+              : 'bg-indigo-50/45 border-indigo-100/50 text-slate-700'
           }`}>
-            <span className="text-lg absolute top-[12px] right-[12px] animate-pulse">✨</span>
-            <p className="font-extrabold mb-1">💬 Lovi diz:</p>
-            Olá! Vamos organizar sua mente hoje? Conecte-se com sua conta para começarmos nossa jornada produtiva! (•ᴗ•)
+            <span className="text-lg absolute top-[12px] right-[14px]">✨</span>
+            <p className="font-black text-indigo-500 dark:text-indigo-400 mb-1">🤖 Lovi diz:</p>
+            Olá! Vamos organizar sua mente hoje? Conecte-se com sua conta para começarmos nossa jornada de clareza mental e evolução cognitiva! (•ᴗ•)
           </div>
 
           {/* Error Alert */}
           {error && (
-            <div className="mb-6 p-4 rounded-[20px] bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs flex items-center gap-3 text-left animate-headshake">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="mb-6 p-4 rounded-[20px] bg-rose-500/10 border border-rose-500/25 text-rose-600 text-xs flex items-center gap-3 text-left font-bold"
+            >
               <span>⚠️ {error}</span>
-            </div>
+            </motion.div>
           )}
 
           {/* Large Google Login Button */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.01, translateY: -1 }}
+            whileTap={{ scale: 0.99 }}
             onClick={handleGoogleLoginClick}
             disabled={isLoading}
-            className={`w-full py-4 px-6 font-black rounded-2xl shadow-xl transition-all duration-200 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-75 disabled:active:scale-100 animate-breathe ${
+            className={`w-full py-4 px-6 font-extrabold rounded-2xl shadow-md transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-75 disabled:active:scale-100 ${
               isDarkMode 
-                ? 'bg-white hover:bg-slate-50 text-slate-900 border border-slate-200' 
-                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20'
+                ? 'bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 shadow-slate-900/5' 
+                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/15'
             }`}
             aria-label="Fazer login com conta do Google"
           >
@@ -154,14 +192,14 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, theme, setTheme })
                 <span>Fazer login com o Google</span>
               </>
             )}
-          </button>
-
+          </motion.button>
+ 
           {/* Privacy Note */}
-          <div className={`mt-8 text-[11px] leading-relaxed ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-            Ao entrar, você concorda com o compartilhamento do seu perfil de e-mail para fins de personalização cognitiva no LoviTask.
+          <div className={`mt-8 text-[11px] leading-relaxed font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+            Ao entrar, você concorda com a personalização cognitiva baseada nos seus dados de atividade no LoviTask.
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

@@ -19,7 +19,11 @@ public class MetricsController : ControllerBase
     [HttpGet]
     public IActionResult GetMetrics()
     {
-        var metrics = _personalizationEngine.BuildPersonalizationMetrics();
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value 
+                     ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value 
+                     ?? User.Identity?.Name 
+                     ?? "default-user";
+        var metrics = _personalizationEngine.BuildPersonalizationMetrics(userId);
         return Ok(metrics);
     }
 }

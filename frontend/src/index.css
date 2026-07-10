@@ -2,91 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-/* Custom background styles for light/dark mode */
-.bg-playful-light {
-  background-color: #F6F5FF;
-}
-
-.bg-playful-dark {
-  background-color: #0B0A16;
-}
-
-/* Custom Animations for Playful UI */
-.animate-bounce-slow {
-  animation: bounce-slow 4s infinite ease-in-out;
-}
-
-@keyframes bounce-slow {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
+@layer base {
+  body {
+    font-family: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-.animate-headshake {
-  animation: headshake 0.6s ease-in-out;
+/* Custom Scrollbar for Notion/Linear look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-@keyframes headshake {
-  0% { transform: translateX(0); }
-  6.5% { transform: translateX(-6px) rotateY(-9deg); }
-  18.5% { transform: translateX(5px) rotateY(7deg); }
-  31.5% { transform: translateX(-3px) rotateY(-5deg); }
-  43.5% { transform: translateX(2px) rotateY(3deg); }
-  50% { transform: translateX(0); }
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* Breath Animation for Interactive Buttons */
-.animate-breathe {
-  animation: breathe 3s infinite ease-in-out;
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 100px;
 }
 
-@keyframes breathe {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3);
-  }
-  50% {
-    transform: scale(1.02);
-    box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.4);
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.25);
 }
 
-/* Shimmer animation for card borders/backgrounds */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+/* Custom Animations and Glows */
+.ambient-glow {
+  filter: blur(140px);
+  opacity: 0.45;
+  mix-blend-mode: plus-lighter;
 }
 
-.animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite linear;
+.dark .ambient-glow {
+  filter: blur(140px);
+  opacity: 0.15;
+  mix-blend-mode: screen;
 }
 
-/* Accessibility focus ring adjustments */
+/* Modern Datepicker overrides for UI consistency */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.4) sepia(1) saturate(3) hue-rotate(200deg);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.9) sepia(0.2) saturate(2) hue-rotate(200deg);
+}
+
+/* Smooth and playful card animations */
+.premium-card {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Accent focus rings */
 *:focus-visible {
-  outline: 3px solid rgba(99, 102, 241, 0.6);
+  outline: 3px solid rgba(99, 102, 241, 0.45);
   outline-offset: 2px;
 }

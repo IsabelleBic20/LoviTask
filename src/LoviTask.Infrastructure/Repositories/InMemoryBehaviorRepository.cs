@@ -21,5 +21,6 @@ public class InMemoryBehaviorRepository : IBehaviorRepository
         _events.Add(activityEvent);
     }
 
-    public IReadOnlyList<UserActivityEvent> GetEvents() => _events;
+    public IReadOnlyList<UserActivityEvent> GetEvents(string userId) =>
+        _events.Where(e => e.UserId == userId).ToList();
 }

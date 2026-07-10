@@ -25,9 +25,9 @@ public class PersonalizationEngine : IPersonalizationEngine
         _behaviorRepository.SaveEvent(activityEvent);
     }
 
-    public CognitiveProfile BuildCognitiveProfile()
+    public CognitiveProfile BuildCognitiveProfile(string userId)
     {
-        var history = _behaviorRepository.GetEvents().ToList();
+        var history = _behaviorRepository.GetEvents(userId).ToList();
         if (!history.Any())
         {
             return new CognitiveProfile
@@ -67,17 +67,17 @@ public class PersonalizationEngine : IPersonalizationEngine
         };
     }
 
-    public Recommendation[] GenerateRecommendations()
+    public Recommendation[] GenerateRecommendations(string userId)
     {
-        var history = _behaviorRepository.GetEvents().ToList();
+        var history = _behaviorRepository.GetEvents(userId).ToList();
         var completedEvents = history.Where(e => e.Completed == true).ToList();
         var abandonedEvents = history.Where(e => e.Completed == false).ToList();
         return GenerateRecommendations(history, completedEvents, abandonedEvents);
     }
 
-    public PersonalizationMetrics BuildPersonalizationMetrics()
+    public PersonalizationMetrics BuildPersonalizationMetrics(string userId)
     {
-        var history = _behaviorRepository.GetEvents().ToList();
+        var history = _behaviorRepository.GetEvents(userId).ToList();
         return _metricsProvider.BuildMetrics(history);
     }
 
