@@ -201,10 +201,10 @@ function DashboardWrapper() {
               </div>
               <button 
                 onClick={handleLogout}
-                className="p-1 hover:bg-rose-500/10 rounded-lg text-slate-400 hover:text-rose-500 transition-colors"
+                className="px-2 py-1 hover:bg-rose-500/10 rounded-lg text-slate-400 hover:text-rose-500 transition-colors text-xs font-black uppercase tracking-wider"
                 title="Sair da Conta"
               >
-                🚪
+                Sair
               </button>
             </div>
           </div>
