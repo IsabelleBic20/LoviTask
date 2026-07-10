@@ -3,14 +3,22 @@ import { loviTaskAPI } from '../services/api';
 
 interface LoginProps {
   onLoginSuccess: (email: string) => void;
+  theme: 'light' | 'dark';
+  setTheme: React.Dispatch<React.SetStateAction<'light' | 'dark'>>;
 }
 
-export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
+export const Login: React.FC<LoginProps> = ({ onLoginSuccess, theme, setTheme }) => {
+  const [rememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const isDarkMode = theme === 'dark';
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('lovitask_theme', newTheme);
+  };
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
@@ -39,53 +47,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     return () => window.removeEventListener('message', handleMessage);
   }, [rememberMe, onLoginSuccess]);
 
-  // Prefill mock credentials for easy testing
-  const handlePrefill = () => {
-    setEmail('isabelle@lovitask.com');
-    setPassword('123456');
-    setError('');
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!email) {
-      setError('Por favor, insira o seu e-mail.');
-      return;
-    }
-    if (!password) {
-      setError('Por favor, insira a sua senha.');
-      return;
-    }
-    if (password.length < 6) {
-      setError('A senha deve conter no mínimo 6 caracteres.');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const data = await loviTaskAPI.login(email, password);
-      
-      const storage = rememberMe ? localStorage : sessionStorage;
-      storage.setItem('lovitask_user', data.email);
-      storage.setItem('lovitask_jwt', data.token);
-      storage.setItem('lovitask_logged_in', 'true');
-
-      onLoginSuccess(data.email);
-    } catch (err: any) {
-      const msg = err.response?.data?.message || 'E-mail ou senha incorretos ou erro de conexão com o servidor.';
-      setError(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleGoogleLoginClick = () => {
-    setError('');
-    const width = 480;
-    const height = 580;
+    const width = 500;
+    const height = 600;
     const left = window.screenX + (window.outerWidth - width) / 2;
     const top = window.screenY + (window.outerHeight - height) / 2;
     
@@ -96,58 +60,73 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     );
   };
 
-  const handleOAuthLogin = (provider: string) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      const mockEmail = `convidado_${provider.toLowerCase()}@lovitask.com`;
-      const mockToken = 'mock_oauth_jwt_token_123456';
-      
-      const storage = rememberMe ? localStorage : sessionStorage;
-      storage.setItem('lovitask_user', mockEmail);
-      storage.setItem('lovitask_jwt', mockToken);
-      storage.setItem('lovitask_logged_in', 'true');
-      
-      onLoginSuccess(mockEmail);
-    }, 1000);
-  };
-
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 overflow-hidden px-4">
-      {/* Dynamic Background Blobs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-600/20 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
+    <div className={`relative min-h-screen flex flex-col items-center justify-center transition-colors duration-300 px-4 overflow-hidden ${
+      isDarkMode ? 'bg-playful-dark text-white' : 'bg-playful-light text-slate-800'
+    }`}>
+      
+      {/* Decorative Floating Blobs */}
+      <div className={`absolute top-[-100px] left-[10%] w-[350px] h-[350px] rounded-full blur-[100px] pointer-events-none transition-opacity duration-500 ${
+        isDarkMode ? 'bg-indigo-900/10' : 'bg-indigo-500/5'
+      }`} />
+      <div className={`absolute bottom-[-100px] right-[10%] w-[350px] h-[350px] rounded-full blur-[100px] pointer-events-none transition-opacity duration-500 ${
+        isDarkMode ? 'bg-purple-900/10' : 'bg-purple-500/5'
+      }`} />
+
+      {/* Floating shape items (Finch/Duolingo style background decor) */}
+      <div className="absolute top-[20%] right-[15%] text-indigo-400/20 text-3xl select-none pointer-events-none font-bold animate-bounce-slow">✦</div>
+      <div className="absolute bottom-[20%] left-[15%] text-purple-400/20 text-2xl select-none pointer-events-none font-bold animate-bounce-slow" style={{ animationDelay: '1s' }}>○</div>
+
+      {/* Floating Theme Switcher */}
+      <div className="absolute top-6 right-6 z-20">
+        <button
+          onClick={toggleTheme}
+          className={`p-3 rounded-2xl border transition-all duration-200 ${
+            isDarkMode 
+              ? 'bg-slate-900/80 border-slate-800 text-amber-400 hover:bg-slate-850' 
+              : 'bg-white border-slate-200 text-indigo-600 hover:bg-slate-50 shadow-md'
+          }`}
+          title={isDarkMode ? "Mudar para Modo Claro" : "Mudar para Modo Escuro"}
+          aria-label="Alternar tema de acessibilidade"
+        >
+          {isDarkMode ? '☀️' : '🌙'}
+        </button>
+      </div>
 
       {/* Login Card */}
       <div className="w-full max-w-md relative z-10">
-        <div className="backdrop-blur-xl bg-slate-900/60 border border-slate-800 rounded-3xl p-8 shadow-2xl transition-all duration-300 hover:border-slate-700/80 text-center">
+        <div className={`border rounded-[28px] p-8 shadow-2xl transition-all duration-300 text-center ${
+          isDarkMode ? 'bg-slate-900/60 border-slate-800/80 shadow-slate-950/60' : 'bg-white border-indigo-100 shadow-indigo-100/50'
+        }`}>
           
           {/* Header & Logo */}
-          <div className="mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30 mb-6 animate-bounce-slow">
-              <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
+          <div className="mb-6 flex flex-col items-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-[20px] bg-gradient-to-tr from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/25 mb-4 animate-bounce-slow">
+              <span className="text-4xl">🧠</span>
             </div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight bg-clip-text bg-gradient-to-r from-white via-slate-100 to-indigo-200">
+            <h1 className={`text-3xl font-black tracking-tight leading-none ${
+              isDarkMode ? 'text-white' : 'text-slate-800'
+            }`}>
               LoviTask
             </h1>
-            <p className="text-slate-400 mt-2 text-sm font-medium">
-              Assistente Cognitivo Adaptativo
+            <p className={`mt-2.5 text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
+              🌱 Companheiro Cognitivo Adaptativo
             </p>
           </div>
 
-          <div className="text-slate-300 text-sm mb-8 leading-relaxed">
-            Bem-vindo! Conecte-se com sua conta Google para gerenciar seus brain dumps, acessar métricas e otimizar sua produtividade de forma adaptativa.
+          {/* speech bubble mascot */}
+          <div className={`p-4 rounded-[20px] text-xs font-semibold leading-relaxed border relative mb-6 text-left ${
+            isDarkMode ? 'bg-slate-950 border-slate-900 text-slate-300' : 'bg-indigo-50/50 border-indigo-100/60 text-slate-700'
+          }`}>
+            <span className="text-lg absolute top-[12px] right-[12px] animate-pulse">✨</span>
+            <p className="font-extrabold mb-1">💬 Lovi diz:</p>
+            Olá! Vamos organizar sua mente hoje? Conecte-se com sua conta para começarmos nossa jornada produtiva! (•ᴗ•)
           </div>
 
           {/* Error Alert */}
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm flex items-center gap-3 text-left animate-headshake">
-              <svg className="w-5 h-5 shrink-0 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span>{error}</span>
+            <div className="mb-6 p-4 rounded-[20px] bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs flex items-center gap-3 text-left animate-headshake">
+              <span>⚠️ {error}</span>
             </div>
           )}
 
@@ -155,10 +134,15 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           <button
             onClick={handleGoogleLoginClick}
             disabled={isLoading}
-            className="w-full py-4 px-6 bg-white hover:bg-slate-50 text-slate-900 font-bold rounded-2xl shadow-xl hover:shadow-indigo-500/10 border border-slate-200 hover:border-indigo-500/30 transition-all duration-200 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-75 disabled:active:scale-100"
+            className={`w-full py-4 px-6 font-black rounded-2xl shadow-xl transition-all duration-200 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-75 disabled:active:scale-100 animate-breathe ${
+              isDarkMode 
+                ? 'bg-white hover:bg-slate-50 text-slate-900 border border-slate-200' 
+                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20'
+            }`}
+            aria-label="Fazer login com conta do Google"
           >
             {isLoading ? (
-              <svg className="animate-spin h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24">
+              <svg className={`animate-spin h-5 w-5 ${isDarkMode ? 'text-indigo-600' : 'text-white'}`} fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
@@ -173,7 +157,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           </button>
 
           {/* Privacy Note */}
-          <div className="mt-8 text-xs text-slate-500 leading-relaxed">
+          <div className={`mt-8 text-[11px] leading-relaxed ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
             Ao entrar, você concorda com o compartilhamento do seu perfil de e-mail para fins de personalização cognitiva no LoviTask.
           </div>
         </div>

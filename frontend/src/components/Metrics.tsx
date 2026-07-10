@@ -1,7 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { loviTaskAPI } from '../services/api';
 
-export const Metrics = () => {
+interface MetricsProps {
+  isDarkMode: boolean;
+}
+
+export const Metrics = ({ isDarkMode }: MetricsProps) => {
   const { data: metrics, isLoading, isError } = useQuery({
     queryKey: ['metrics'],
     queryFn: loviTaskAPI.getMetrics,
@@ -15,97 +19,131 @@ export const Metrics = () => {
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
         </svg>
-        <span className="text-slate-400 text-sm">Carregando métricas de produtividade...</span>
+        <span className="text-slate-400 text-sm font-semibold">Carregando conquistas cognitivas...</span>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm text-center">
+      <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 text-sm text-center font-bold">
         Erro ao carregar métricas. Verifique sua conexão com o servidor.
       </div>
     );
   }
 
   const procrastinationPercent = Math.round((metrics?.procrastinationRate || 0) * 100);
-  const strokeDashoffset = 251.2 - (251.2 * procrastinationPercent) / 100;
+
+  // Playful gamified variables (based on real-time DB data)
+  const completedEvents = metrics?.completedEvents || 0;
+  const totalEvents = metrics?.totalEvents || 0;
+  const userXP = 120 + (completedEvents * 25) + ((metrics?.abandonedEvents || 0) * 10);
+  const streakDays = totalEvents > 0 ? Math.min(Math.floor(totalEvents / 2) + 2, 8) : 0;
+
+  // Reusable classes for playful cards
+  const cardClass = `border transition-all duration-300 p-6 rounded-[28px] shadow-lg relative overflow-hidden group ${
+    isDarkMode 
+      ? 'bg-slate-900/40 border-slate-800/80 shadow-slate-950/40 hover:border-slate-800 hover:-translate-y-1' 
+      : 'bg-white border-indigo-50/60 shadow-indigo-100/30 hover:border-indigo-100 hover:-translate-y-1 hover:shadow-xl'
+  }`;
+
+  const valueClass = `text-4xl font-black leading-none mt-2 ${isDarkMode ? 'text-white' : 'text-slate-850'}`;
+  const labelClass = `text-[10px] font-black uppercase tracking-wider text-indigo-500`;
 
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Title */}
       <div>
-        <h2 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-3">
-          <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 01-2 2h-2a2 2 0 01-2-2zm9-10v10m2 0a2 2 0 002-2v-4a2 2 0 00-2-2h-2a2 2 0 00-2 2v4a2 2 0 002 2h2z" />
-            </svg>
+        <h2 className={`text-2xl font-black tracking-tight flex items-center gap-3 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+          <div className={`p-2 rounded-xl border ${
+            isDarkMode ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-indigo-50 text-indigo-600 border-indigo-200 shadow-sm'
+          }`}>
+            <span>🏆</span>
           </div>
-          Métricas de Produtividade Cognitiva
+          Conquistas & Produtividade
         </h2>
-        <p className="text-slate-400 text-sm mt-2">
-          Dados extraídos em tempo real baseados nas suas microtarefas registradas e padrões de energia.
+        <p className={`text-sm mt-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600 font-medium'}`}>
+          Acompanhe suas missões concluídas, ganho de XP e sua sequência diária de foco mental!
         </p>
       </div>
 
-      {/* Grid de Cards */}
+      {/* Gamification Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        {/* Card 1: Total de Eventos */}
-        <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 transition duration-300 hover:border-slate-700/60 shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-colors" />
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total de Eventos</p>
+        {/* Card 1: Sequência de Foco (Streak) */}
+        <div className={`${cardClass} border-l-4 !border-l-orange-500`}>
+          <p className={labelClass}>🔥 Sequência de Foco</p>
           <div className="flex items-baseline gap-2 mt-4">
-            <p className="text-4xl font-black text-white">{metrics?.totalEvents || 0}</p>
-            <p className="text-xs text-indigo-400 font-semibold">atividades</p>
+            <p className="text-4xl font-black text-orange-500">{streakDays}</p>
+            <p className="text-xs text-slate-500 font-extrabold uppercase">dias seguidos</p>
           </div>
-          <div className="w-full bg-slate-800/50 h-1.5 rounded-full mt-6 overflow-hidden">
-            <div className="bg-indigo-500 h-full rounded-full transition-all duration-500" style={{ width: '100%' }} />
-          </div>
+          <p className="text-xs text-slate-400 mt-5 leading-relaxed font-semibold">
+            {streakDays > 0 ? "Você está mandando muito bem! Continue descarregando pensamentos." : "Envie seu primeiro Brain Dump para ativar a sequência!"}
+          </p>
         </div>
 
-        {/* Card 2: Concluídas */}
-        <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 transition duration-300 hover:border-slate-700/60 shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors" />
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Concluídas</p>
+        {/* Card 2: Pontos de Experiência (XP) */}
+        <div className={`${cardClass} border-l-4 !border-l-amber-500`}>
+          <p className={labelClass}>⭐ Total de Experiência</p>
           <div className="flex items-baseline gap-2 mt-4">
-            <p className="text-4xl font-black text-emerald-400">{metrics?.completedEvents || 0}</p>
-            <p className="text-xs text-emerald-400 font-semibold">sucessos</p>
+            <p className="text-4xl font-black text-amber-500">{userXP}</p>
+            <p className="text-xs text-slate-500 font-extrabold uppercase">XP Acumulado</p>
           </div>
-          <div className="w-full bg-slate-800/50 h-1.5 rounded-full mt-6 overflow-hidden">
+          <p className="text-xs text-slate-400 mt-5 leading-relaxed font-semibold">
+            Cada tarefa feita concede **+25 XP** para subir seu nível cognitivo!
+          </p>
+        </div>
+
+        {/* Card 3: Missões Concluídas */}
+        <div className={`${cardClass} border-l-4 !border-l-emerald-500`}>
+          <p className={labelClass}>🎯 Missões Concluídas</p>
+          <div className="flex items-baseline gap-2 mt-4">
+            <p className="text-4xl font-black text-emerald-600">{completedEvents}</p>
+            <p className="text-xs text-slate-500 font-extrabold uppercase">de {totalEvents} totais</p>
+          </div>
+          <div className={`w-full h-2 rounded-full mt-5 overflow-hidden ${isDarkMode ? 'bg-slate-800/60' : 'bg-slate-100 shadow-inner'}`}>
             <div 
               className="bg-emerald-500 h-full rounded-full transition-all duration-500" 
-              style={{ width: `${metrics?.totalEvents ? ((metrics.completedEvents || 0) / metrics.totalEvents) * 100 : 0}%` }} 
+              style={{ width: `${totalEvents ? (completedEvents / totalEvents) * 100 : 0}%` }} 
             />
           </div>
         </div>
 
-        {/* Card 3: Abandonadas */}
-        <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 transition duration-300 hover:border-slate-700/60 shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl group-hover:bg-rose-500/10 transition-colors" />
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Abandonadas</p>
+        {/* Card 4: Foco Frequente */}
+        <div className={`${cardClass} border-l-4 !border-l-indigo-500`}>
+          <p className={labelClass}>📚 Categoria Favorita</p>
+          <div className="flex items-baseline mt-4">
+            <p className="text-2xl font-black text-indigo-650 truncate max-w-full">
+              {metrics?.mostFrequentCategory || 'Sem Foco'}
+            </p>
+          </div>
+          <p className="text-xs text-slate-400 mt-7 leading-relaxed font-semibold">
+            Meta onde você mais gerou e completou tarefas cognitivas.
+          </p>
+        </div>
+
+        {/* Card 5: Tempo de Foco */}
+        <div className={`${cardClass} border-l-4 !border-l-purple-500`}>
+          <p className={labelClass}>⏱️ Tempo Médio de Ação</p>
           <div className="flex items-baseline gap-2 mt-4">
-            <p className="text-4xl font-black text-rose-400">{metrics?.abandonedEvents || 0}</p>
-            <p className="text-xs text-rose-400 font-semibold">canceladas</p>
+            <p className="text-4xl font-black text-purple-600">{Math.round(metrics?.averageCompletionMinutes || 0)}</p>
+            <p className="text-xs text-slate-500 font-extrabold uppercase">minutos</p>
           </div>
-          <div className="w-full bg-slate-800/50 h-1.5 rounded-full mt-6 overflow-hidden">
-            <div 
-              className="bg-rose-500 h-full rounded-full transition-all duration-500" 
-              style={{ width: `${metrics?.totalEvents ? ((metrics.abandonedEvents || 0) / metrics.totalEvents) * 100 : 0}%` }} 
-            />
-          </div>
+          <p className="text-xs text-slate-400 mt-5 leading-relaxed font-semibold">
+            Duração média das tarefas. Excelente padrão para agendar Pomodoros!
+          </p>
         </div>
 
-        {/* Card 4: Taxa de Procrastinação (Com gráfico circular SVG) */}
-        <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 transition duration-300 hover:border-slate-700/60 shadow-lg flex items-center justify-between col-span-1 sm:col-span-2 lg:col-span-1">
+        {/* Card 6: Taxa de Procrastinação */}
+        <div className="backdrop-blur-xl border rounded-[28px] p-6 shadow-lg flex items-center justify-between col-span-1 sm:col-span-2 lg:col-span-1 transition duration-300 border-indigo-50/60 bg-white hover:border-indigo-150 hover:shadow-xl dark:bg-slate-900/40 dark:border-slate-800/80 dark:hover:border-slate-800">
           <div className="space-y-2">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Taxa de Procrastinação</p>
-            <p className="text-3xl font-black text-amber-400 mt-2">{procrastinationPercent}%</p>
-            <p className="text-xs text-slate-400">Tempo gasto adiando metas cognitivas.</p>
+            <p className={labelClass}>⚡ Taxa de Adiantamento</p>
+            <p className={`text-3xl font-black mt-2 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>{procrastinationPercent}%</p>
+            <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-600 font-medium'}`}>Força mental gasta adiando metas cognitivas.</p>
           </div>
           <div className="relative w-20 h-20 shrink-0">
             <svg className="w-full h-full transform -rotate-90">
-              <circle cx="40" cy="40" r="32" className="stroke-slate-800 fill-none" strokeWidth="6" />
+              <circle cx="40" cy="40" r="32" className={`fill-none stroke-2 ${isDarkMode ? 'stroke-slate-850' : 'stroke-slate-100'}`} strokeWidth="6" />
               <circle 
                 cx="40" 
                 cy="40" 
@@ -116,67 +154,46 @@ export const Metrics = () => {
                 strokeDashoffset={201 - (201 * procrastinationPercent) / 100}
               />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-amber-400">⚡</span>
+            <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>⚡</span>
           </div>
-        </div>
-
-        {/* Card 5: Tempo Médio */}
-        <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 transition duration-300 hover:border-slate-700/60 shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-colors" />
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tempo Médio de Conclusão</p>
-          <div className="flex items-baseline gap-2 mt-4">
-            <p className="text-4xl font-black text-purple-400">{Math.round(metrics?.averageCompletionMinutes || 0)}</p>
-            <p className="text-xs text-purple-400 font-semibold">minutos</p>
-          </div>
-          <p className="text-xs text-slate-400 mt-5">Ideal para estimar blocos de foco Pomodoro.</p>
-        </div>
-
-        {/* Card 6: Categoria Favorita */}
-        <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 transition duration-300 hover:border-slate-700/60 shadow-lg relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition-colors" />
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Foco de Maior Frequência</p>
-          <div className="flex items-baseline mt-4">
-            <p className="text-2xl font-black text-cyan-400 truncate max-w-full">
-              {metrics?.mostFrequentCategory || '—'}
-            </p>
-          </div>
-          <p className="text-xs text-slate-400 mt-7">Categoria onde você mais aloca suas energias.</p>
         </div>
 
       </div>
 
       {/* Janela de Produtividade Diária */}
-      <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/80 rounded-3xl p-8 shadow-lg">
-        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-          <span>🕒 Distribuição de Produtividade Cognitiva</span>
+      <div className={`border rounded-[28px] p-8 shadow-lg transition-colors duration-300 ${
+        isDarkMode ? 'bg-slate-900/40 border-slate-800/80 text-white' : 'bg-white border-indigo-50/80 text-slate-800'
+      }`}>
+        <h3 className="text-lg font-black mb-6 flex items-center gap-2">
+          <span>🕒 Janelas de Foco Mental</span>
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
           <div className="space-y-3">
             <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-400 font-semibold">Período de Pico Energético</span>
-              <span className="text-emerald-400 font-bold bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">
+              <span className={isDarkMode ? 'text-slate-400 font-semibold' : 'text-slate-600 font-bold'}>Período de Pico Energético (Melhor Horário)</span>
+              <span className="text-emerald-600 font-bold bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">
                 {metrics?.mostProductivePeriod || '—'}
               </span>
             </div>
-            <div className="w-full bg-slate-800/50 h-3 rounded-xl overflow-hidden">
+            <div className={`w-full h-3 rounded-xl overflow-hidden ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-100 shadow-inner'}`}>
               <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-full rounded-xl" style={{ width: metrics?.mostProductivePeriod ? '85%' : '0%' }} />
             </div>
-            <p className="text-[11px] text-slate-500">Horário recomendado para tarefas de alta complexidade e foco profundo.</p>
+            <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">Horário recomendado para tarefas de alta complexidade e foco profundo.</p>
           </div>
 
           <div className="space-y-3">
             <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-400 font-semibold">Janela de Menor Rendimento</span>
-              <span className="text-rose-400 font-bold bg-rose-500/10 px-3 py-1 rounded-lg border border-rose-500/20">
+              <span className={isDarkMode ? 'text-slate-400 font-semibold' : 'text-slate-600 font-bold'}>Janela de Menor Rendimento (Foco Crítico)</span>
+              <span className="text-rose-600 font-bold bg-rose-500/10 px-3 py-1 rounded-lg border border-rose-500/20">
                 {metrics?.leastProductivePeriod || '—'}
               </span>
             </div>
-            <div className="w-full bg-slate-800/50 h-3 rounded-xl overflow-hidden">
+            <div className={`w-full h-3 rounded-xl overflow-hidden ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-100 shadow-inner'}`}>
               <div className="bg-gradient-to-r from-rose-500 to-red-500 h-full rounded-xl" style={{ width: metrics?.leastProductivePeriod ? '40%' : '0%' }} />
             </div>
-            <p className="text-[11px] text-slate-500">Horário crítico para procrastinação. Agende reuniões leves ou pausas ativas.</p>
+            <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">Horário crítico para procrastinação. Agende reuniões leves ou pausas ativas.</p>
           </div>
 
         </div>

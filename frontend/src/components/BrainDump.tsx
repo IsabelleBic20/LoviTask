@@ -3,7 +3,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { loviTaskAPI } from '../services/api';
 import { MicrotaskSuggestion, UserActivityEvent } from '../types';
 
-export const BrainDump = () => {
+interface BrainDumpProps {
+  isDarkMode: boolean;
+}
+
+export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
   const queryClient = useQueryClient();
 
   // Brain Dump States
@@ -11,7 +15,10 @@ export const BrainDump = () => {
   const [goal, setGoal] = useState('');
   const [deadline, setDeadline] = useState('');
 
-  // Event Logger States
+  // Interactive Categories list (prefilled with friendly icons)
+  const [categories, setCategories] = useState(['Trabalho', 'Estudos', 'Casa', 'Saúde']);
+
+  // Event Logger States (Modal based)
   const [showLogForm, setShowLogForm] = useState(false);
   const [editingEventId, setEditingEventId] = useState<number | null>(null);
   const [logDescription, setLogDescription] = useState('');
@@ -51,6 +58,9 @@ export const BrainDump = () => {
         queryClient.invalidateQueries({ queryKey: ['metrics'] });
         queryClient.invalidateQueries({ queryKey: ['profile'] });
         queryClient.invalidateQueries({ queryKey: ['recommendations'] });
+        
+        // Clear text field after successful dump analysis
+        setBrainDumpText('');
       }
     },
   });
@@ -118,211 +128,416 @@ export const BrainDump = () => {
     setLogMood(ev.mood || 'Neutro');
     setLogCompleted(completedStatus);
     setShowLogForm(true);
-    
-    // Smooth scroll to the form
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   };
 
+  // Helper categories matching user spec
+  const getCategoryEmoji = (cat: string) => {
+    if (cat.toLowerCase().includes('trabalho')) return '💼';
+    if (cat.toLowerCase().includes('estudo')) return '📚';
+    if (cat.toLowerCase().includes('casa')) return '🏠';
+    if (cat.toLowerCase().includes('saúde') || cat.toLowerCase().includes('saude')) return '❤️';
+    return '🌱';
+  };
+
+  // Helper energy level matching spec
+  const getEnergyLabel = (lvl: number) => {
+    if (lvl <= 3) return '😴 Energia Baixa';
+    if (lvl <= 7) return '🙂 Energia Média';
+    return '🔥 Energia Alta';
+  };
+
+  // Reusable classes for playful cards
+  const cardClass = `border transition-all duration-300 p-8 rounded-[28px] shadow-lg relative overflow-hidden group ${
+    isDarkMode 
+      ? 'bg-slate-900/40 border-slate-800/80 shadow-slate-950/40 hover:border-slate-800' 
+      : 'bg-white border-indigo-50/60 shadow-indigo-100/30 hover:border-indigo-100'
+  }`;
+
+  const inputClass = `w-full p-4 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-sm leading-relaxed ${
+    isDarkMode 
+      ? 'bg-slate-950/50 border-slate-850 text-slate-200 placeholder-slate-650' 
+      : 'bg-indigo-50/20 border-indigo-100/80 text-slate-800 placeholder-slate-400 focus:bg-white'
+  }`;
+
+  const selectClass = `w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-xs font-bold ${
+    isDarkMode 
+      ? 'bg-slate-950/50 border-slate-850 text-slate-200' 
+      : 'bg-white border-slate-250 text-slate-850'
+  }`;
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeIn">
-      
-      {/* Coluna 1 & 2: Brain Dump e Sugestões */}
-      <div className="lg:col-span-2 space-y-6">
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Card Brain Dump */}
-        <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 transition duration-300 hover:border-slate-700/60 shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+        {/* Coluna 1 & 2: Chat-like Brain Dump */}
+        <div className="lg:col-span-2 space-y-8">
           
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-xl border border-indigo-500/20">
-              <svg className="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-              </svg>
+          {/* Playful Brain Dump Box */}
+          <div className={`${cardClass} border-indigo-100/40`}>
+            {isDarkMode && <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />}
+            
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-3xl animate-pulse">💭</span>
+              <h2 className={`text-xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                O que está ocupando sua mente hoje?
+              </h2>
             </div>
-            <h2 className="text-xl font-extrabold text-white tracking-tight">Brain Dump Inteligente</h2>
-          </div>
-          
-          <p className="text-slate-400 text-xs mb-6 leading-relaxed">
-            Escreva em texto livre tudo o que está ocupando espaço mental. Nossa inteligência vai identificar as microtarefas relevantes e **salvar automaticamente cada uma delas** no seu histórico como pendentes.
-          </p>
 
-          <form onSubmit={handleBrainDumpSubmit} className="space-y-6">
-            <textarea
-              value={brainDumpText}
-              onChange={(e) => setBrainDumpText(e.target.value)}
-              placeholder="Descarregue seus pensamentos aqui, ex: 'Preciso terminar o relatório de vendas hoje à tarde, mas estou muito cansado. Também preciso comprar ração para o cachorro amanhã...'"
-              className="w-full p-4 bg-slate-950/50 border border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-slate-200 placeholder-slate-600 text-sm leading-relaxed"
-              rows={6}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Meta Associada (opcional)</label>
-                <input
-                  type="text"
-                  value={goal}
-                  onChange={(e) => setGoal(e.target.value)}
-                  placeholder="Ex: Trabalho, Estudos, Casa"
-                  className="w-full p-3 bg-slate-950/50 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-slate-200 placeholder-slate-600 text-xs"
+            <form onSubmit={handleBrainDumpSubmit} className="space-y-6">
+              {/* Speck bubble textarea container */}
+              <div className="relative">
+                <textarea
+                  value={brainDumpText}
+                  onChange={(e) => setBrainDumpText(e.target.value)}
+                  placeholder="Escreva qualquer coisa que vier na cabeça... tarefas pendentes, ideias, prazos ou sentimentos."
+                  className={inputClass}
+                  rows={6}
+                  aria-label="Área de Brain Dump"
                 />
               </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Prazo Final (opcional)</label>
+
+              {/* Category Chips Selector (Direct replacements for standard inputs) */}
+              <div className="space-y-3">
+                <label className="block text-[10px] font-black uppercase tracking-wider text-indigo-500">
+                  🏷️ Associar à Meta Principal:
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setGoal(goal === cat ? '' : cat)}
+                      className={`px-4 py-2 rounded-full font-bold text-xs transition-all duration-200 border flex items-center gap-1.5 ${
+                        goal === cat 
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-500/20 scale-105' 
+                          : isDarkMode
+                            ? 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span>{getCategoryEmoji(cat)}</span>
+                      <span>{cat}</span>
+                      {goal === cat && <span className="text-[10px]">✓</span>}
+                    </button>
+                  ))}
+                  
+                  {/* Create custom category chip */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newCat = prompt('Digite o nome da nova categoria:');
+                      if (newCat && !categories.includes(newCat)) {
+                        setCategories([...categories, newCat]);
+                        setGoal(newCat);
+                      }
+                    }}
+                    className={`px-4 py-2 rounded-full font-bold text-xs transition-all duration-200 border border-dashed ${
+                      isDarkMode 
+                        ? 'border-slate-800 text-slate-500 hover:text-slate-400' 
+                        : 'border-slate-300 text-slate-500 hover:bg-slate-50'
+                    }`}
+                  >
+                    ➕ Nova Categoria
+                  </button>
+                </div>
+              </div>
+
+              {/* Deadline (Cute styled input) */}
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black uppercase tracking-wider text-indigo-500">
+                  📅 Prazo final sugerido (opcional):
+                </label>
                 <input
                   type="datetime-local"
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full p-3 bg-slate-950/50 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-slate-200 text-xs text-slate-500"
+                  className={`${inputClass} !p-3 max-w-sm`}
+                  aria-label="Prazo final"
                 />
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={analyzeMutation.isPending}
-              className="w-full bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-600 hover:via-indigo-700 hover:to-purple-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm"
-            >
-              {analyzeMutation.isPending ? (
-                <>
-                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span>Analisando e gerando fluxo...</span>
-                </>
-              ) : (
-                <span className="flex items-center gap-2">
-                  Analisar e Criar Microtarefas
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                  </svg>
-                </span>
-              )}
-            </button>
-          </form>
+              {/* Submit button */}
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-3 border-t border-slate-100/50 dark:border-slate-900/50">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">😊</span>
+                  <span className={`text-xs font-semibold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Relaxa. Eu transformo tudo isso em microtarefas claras.
+                  </span>
+                </div>
+                <button
+                  type="submit"
+                  disabled={analyzeMutation.isPending}
+                  className="w-full sm:w-auto bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-600 hover:via-indigo-700 hover:to-purple-700 text-white font-black px-8 py-3.5 rounded-2xl shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all duration-250 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-sm animate-breathe"
+                >
+                  {analyzeMutation.isPending ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span>Organizando sua mente...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>✨ Organizar Minha Mente</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
 
-          {analyzeMutation.isError && (
-            <div className="mt-4 bg-rose-500/10 border border-rose-500/30 text-rose-300 p-4 rounded-xl text-xs flex items-center gap-2">
-              <svg className="w-5 h-5 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span>Erro ao processar o dump. Verifique se o backend está ativo e tente de novo.</span>
+          {/* Microtarefas Recomendadas (Cozy, custom cards) */}
+          {analyzeMutation.data && (
+            <div className="space-y-4 animate-fadeIn">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">💡</span>
+                <h3 className={`text-lg font-black ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Microtarefas Geradas</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {analyzeMutation.data.map((task: MicrotaskSuggestion, index: number) => (
+                  <div 
+                    key={index} 
+                    className={`p-5 rounded-[24px] border flex flex-col justify-between gap-4 transition duration-300 hover:-translate-y-1 ${
+                      task.priority === 'Alta'
+                        ? 'bg-rose-50/30 border-rose-200 text-slate-800 dark:bg-rose-950/10 dark:border-rose-900/40 dark:text-white'
+                        : task.priority === 'Média'
+                          ? 'bg-amber-50/30 border-amber-250 text-slate-800 dark:bg-amber-950/10 dark:border-amber-900/40 dark:text-white'
+                          : 'bg-emerald-50/30 border-emerald-250 text-slate-800 dark:bg-emerald-950/10 dark:border-emerald-900/40 dark:text-white'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">
+                          {task.priority === 'Alta' ? '🔥' : task.priority === 'Média' ? '⭐' : '🌱'}
+                        </span>
+                        <h4 className="font-extrabold text-sm leading-snug">{task.title}</h4>
+                      </div>
+                      <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                        {task.description}
+                      </p>
+                    </div>
+                    <div className="flex justify-between items-center border-t border-slate-200/40 dark:border-slate-800/40 pt-3">
+                      <span className={`text-[10px] font-black uppercase tracking-wider ${
+                        task.priority === 'Alta' ? 'text-rose-500' : task.priority === 'Média' ? 'text-amber-500' : 'text-emerald-500'
+                      }`}>
+                        {task.priority} Prioridade
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full uppercase">
+                        Salva ✓
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Lista de Microtarefas Geradas no Brain Dump Recente */}
-        {analyzeMutation.data && (
-          <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 space-y-4 animate-fadeIn">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">💡</span>
-              <h3 className="text-lg font-bold text-white">Microtarefas Recomendadas</h3>
-            </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              Identificadas automaticamente e inseridas no seu histórico ao lado em estado de **Pendente** para acompanhamento.
-            </p>
-            
-            <div className="grid grid-cols-1 gap-3">
-              {analyzeMutation.data.map((task: MicrotaskSuggestion, index: number) => (
-                <div 
-                  key={index} 
-                  className="bg-slate-950/40 border border-slate-900 hover:border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition duration-200"
-                >
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2.5">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${
-                          task.priority === 'Alta'
-                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                            : task.priority === 'Média'
-                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                        }`}
-                      >
-                        {task.priority}
-                      </span>
-                      <h4 className="font-extrabold text-white text-sm">{task.title}</h4>
+        {/* Coluna 3: Fluxo de Atividades (Mini-Cards) */}
+        <div className="space-y-6">
+          <div className={`${cardClass} border-sky-100/40`}>
+            <h3 className={`text-base font-black mb-5 flex items-center gap-2.5 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+              <span>📜</span>
+              <span>Fluxo de Atividades</span>
+            </h3>
+
+            {loadingEvents ? (
+              <div className="flex items-center justify-center py-12">
+                <svg className="animate-spin h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              </div>
+            ) : events && events.length > 0 ? (
+              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800">
+                {[...events].reverse().map((ev: UserActivityEvent) => (
+                  <div 
+                    key={ev.id} 
+                    className={`p-5 rounded-[24px] border transition-all duration-300 flex flex-col gap-3.5 hover:shadow-md ${
+                      ev.completed === true 
+                        ? 'bg-emerald-50/20 border-emerald-150 dark:bg-emerald-950/5 dark:border-emerald-900/30' 
+                        : ev.completed === false 
+                          ? 'bg-rose-50/20 border-rose-150 dark:bg-rose-950/5 dark:border-rose-900/30' 
+                          : isDarkMode 
+                            ? 'bg-slate-950/40 border-slate-900 hover:border-slate-800' 
+                            : 'bg-white border-slate-200/80 hover:border-slate-350 shadow-sm'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className={`font-black leading-snug text-xs ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                          🧠 {ev.description}
+                        </p>
+                        
+                        {/* Custom status tag */}
+                        {ev.completed === true ? (
+                          <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+                            Feita
+                          </span>
+                        ) : ev.completed === false ? (
+                          <span className="text-[9px] font-black uppercase tracking-wider text-rose-600 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20 shrink-0">
+                            Fica p/ Depois
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-black uppercase tracking-wider text-sky-600 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20 shrink-0 animate-pulse">
+                            Pendente
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Info Chips (Time, Energy, Category) */}
+                      <div className="flex gap-2 flex-wrap pt-1">
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${
+                          isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'
+                        }`}>
+                          {getCategoryEmoji(ev.category || 'Trabalho')} {ev.category || 'Trabalho'}
+                        </span>
+                        
+                        {ev.estimatedMinutes !== null && ev.estimatedMinutes !== undefined && ev.completed !== null && (
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${
+                            isDarkMode ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' : 'bg-indigo-50 border-indigo-150 text-indigo-650'
+                          }`}>
+                            ⏱️ {ev.estimatedMinutes} min
+                          </span>
+                        )}
+                        
+                        {ev.energyLevel !== null && ev.energyLevel !== undefined && ev.completed !== null && (
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${
+                            isDarkMode ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' : 'bg-purple-50 border-purple-150 text-purple-650'
+                          }`}>
+                            {getEnergyLabel(ev.energyLevel)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-slate-400 text-xs leading-relaxed">{task.description}</p>
+
+                    {/* Pending task inline actions */}
+                    {ev.completed === null && (
+                      <div className="flex gap-2.5 border-t border-slate-200/40 dark:border-slate-800/40 pt-3">
+                        <button
+                          onClick={() => handleStartUpdateEvent(ev, true)}
+                          className={`flex-1 py-2 px-3 border font-extrabold rounded-xl text-[9px] uppercase tracking-wider transition text-center flex items-center justify-center gap-1.5 active:scale-[0.97] ${
+                            isDarkMode 
+                              ? 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/20 text-emerald-400' 
+                              : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700'
+                          }`}
+                        >
+                          ✔️ Concluir
+                        </button>
+                        <button
+                          onClick={() => handleStartUpdateEvent(ev, false)}
+                          className={`flex-1 py-2 px-3 border font-extrabold rounded-xl text-[9px] uppercase tracking-wider transition text-center flex items-center justify-center gap-1.5 active:scale-[0.97] ${
+                            isDarkMode 
+                              ? 'bg-rose-500/10 hover:bg-rose-500/20 border-rose-500/20 text-rose-400' 
+                              : 'bg-rose-50 hover:bg-rose-100 border-rose-200 text-rose-700'
+                          }`}
+                        >
+                          ❌ Adiar
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-xl self-start md:self-auto uppercase tracking-wider">
-                    Registrada
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className={`text-center py-12 text-xs border border-dashed rounded-3xl ${
+                isDarkMode ? 'border-slate-800 bg-slate-950/20 text-slate-500' : 'border-slate-350 bg-slate-50 text-slate-400'
+              }`}>
+                Nenhuma atividade no fluxo. Descarregue sua mente para começarmos!
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Coluna 3: Registro Manual e Histórico de Eventos */}
-      <div className="space-y-6">
-        
-        {/* Formulário de Registro/Edição de Atividade */}
-        <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 shadow-xl transition duration-300 hover:border-slate-700/60 relative overflow-hidden">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
+      {/* Floating Action Button (FAB) + Modal overlay (instead of hardcoded col form) */}
+      <button
+        onClick={() => {
+          setEditingEventId(null);
+          setLogDescription('');
+          setLogCategory('Trabalho');
+          setLogMinutes(30);
+          setLogEnergy(5);
+          setLogMood('Neutro');
+          setLogCompleted(true);
+          setShowLogForm(true);
+        }}
+        className="fixed bottom-8 right-8 z-40 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-200 flex items-center gap-2 group border border-indigo-400/20"
+        aria-label="Registrar atividade manualmente"
+      >
+        <span className="text-xl">➕</span>
+        <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-out text-xs font-black uppercase tracking-wider whitespace-nowrap">
+          Registrar Atividade
+        </span>
+      </button>
+
+      {/* Modal Dialog Form */}
+      {showLogForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn">
+          <div className={`w-full max-w-md border rounded-[28px] p-6 shadow-2xl animate-headshake relative ${
+            isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-indigo-50 text-slate-850'
+          }`}>
+            <button 
+              type="button" 
+              onClick={() => {
+                setShowLogForm(false);
+                setEditingEventId(null);
+              }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-rose-500 text-xl font-bold p-1 transition-colors"
+            >
+              ✕
+            </button>
+
+            <h3 className={`text-lg font-black mb-5 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
               <span>{editingEventId ? '✍️' : '📋'}</span>
               <span>{editingEventId ? 'Atualizar Atividade' : 'Registrar Atividade'}</span>
             </h3>
-            {!showLogForm && (
-              <button
-                onClick={() => {
-                  setEditingEventId(null);
-                  setShowLogForm(true);
-                }}
-                className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-lg"
-              >
-                + Registrar
-              </button>
-            )}
-          </div>
 
-          {showLogForm ? (
-            <form onSubmit={handleLogEventSubmit} className="space-y-5">
+            <form onSubmit={handleLogEventSubmit} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Descrição</label>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-indigo-500 mb-1.5">Descrição da Atividade</label>
                 <input
                   type="text"
                   required
                   value={logDescription}
                   onChange={(e) => setLogDescription(e.target.value)}
                   placeholder="Ex: Ler capítulo de livro, Correr"
-                  className="w-full p-2.5 bg-slate-950/50 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-slate-200 placeholder-slate-600 text-xs"
+                  className={inputClass}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Categoria</label>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-indigo-500 mb-1.5">Categoria</label>
                   <select
                     value={logCategory}
                     onChange={(e) => setLogCategory(e.target.value)}
-                    className="w-full p-2.5 bg-slate-950/50 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-slate-200 text-xs font-semibold"
+                    className={selectClass}
                   >
-                    <option value="Trabalho">Trabalho</option>
-                    <option value="Estudo">Estudo</option>
-                    <option value="Rotina">Rotina</option>
-                    <option value="Saúde">Saúde</option>
+                    <option value="Trabalho">💼 Trabalho</option>
+                    <option value="Estudo">📚 Estudo</option>
+                    <option value="Rotina">🏠 Rotina</option>
+                    <option value="Saúde">❤️ Saúde</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tempo (minutos)</label>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-indigo-500 mb-1.5">Tempo (minutos)</label>
                   <input
                     type="number"
                     min={1}
                     value={logMinutes}
                     onChange={(e) => setLogMinutes(Number(e.target.value))}
-                    className="w-full p-2.5 bg-slate-950/50 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-slate-200 text-xs font-semibold"
+                    className={selectClass}
                   />
                 </div>
               </div>
 
               <div>
-                <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-indigo-500 mb-1.5">
                   <span>Nível de Energia</span>
-                  <span className="text-indigo-400 text-xs font-black">{logEnergy}/10</span>
+                  <span className="text-indigo-600 font-extrabold text-xs">{logEnergy}/10</span>
                 </div>
                 <input
                   type="range"
@@ -330,51 +545,51 @@ export const BrainDump = () => {
                   max="10"
                   value={logEnergy}
                   onChange={(e) => setLogEnergy(Number(e.target.value))}
-                  className="w-full accent-indigo-500 bg-slate-800 h-2 rounded-lg cursor-pointer transition-all duration-200"
+                  className="w-full accent-indigo-500 h-2 rounded-lg cursor-pointer bg-slate-200"
                 />
-                <div className="flex justify-between text-[9px] text-slate-500 mt-1 font-semibold">
-                  <span>Baixa (1)</span>
-                  <span>Média (5)</span>
-                  <span>Alta (10)</span>
+                <div className="flex justify-between text-[9px] text-slate-400 mt-1 font-semibold">
+                  <span>😴 Baixa (1)</span>
+                  <span>🙂 Média (5)</span>
+                  <span>🔥 Alta (10)</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Humor</label>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-indigo-500 mb-1.5">Humor</label>
                   <select
                     value={logMood}
                     onChange={(e) => setLogMood(e.target.value)}
-                    className="w-full p-2.5 bg-slate-950/50 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-slate-200 text-xs font-semibold"
+                    className={selectClass}
                   >
-                    <option value="Focado">Focado</option>
-                    <option value="Calmo">Calmo</option>
-                    <option value="Bem">Bem</option>
-                    <option value="Animado">Animado</option>
-                    <option value="Ansioso">Ansioso</option>
-                    <option value="Cansado">Cansado</option>
-                    <option value="Neutro">Neutro</option>
+                    <option value="Focado">🎯 Focado</option>
+                    <option value="Calmo">🧘 Calmo</option>
+                    <option value="Bem">😊 Bem</option>
+                    <option value="Animado">🎉 Animado</option>
+                    <option value="Ansioso">😵 Ansioso</option>
+                    <option value="Cansado">😴 Cansado</option>
+                    <option value="Neutro">😐 Neutro</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Resultado</label>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-indigo-500 mb-1.5">Resultado</label>
                   <select
                     value={logCompleted ? 'true' : 'false'}
                     onChange={(e) => setLogCompleted(e.target.value === 'true')}
-                    className="w-full p-2.5 bg-slate-950/50 border border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-slate-200 text-xs font-semibold"
+                    className={selectClass}
                   >
-                    <option value="true" className="text-emerald-500 font-bold">Concluída</option>
-                    <option value="false" className="text-rose-500 font-bold">Abandonada</option>
+                    <option value="true" className="text-emerald-600 font-bold">✔️ Concluída</option>
+                    <option value="false" className="text-rose-600 font-bold">❌ Abandonada</option>
                   </select>
                 </div>
               </div>
 
-              <div className="flex gap-2.5 pt-2">
+              <div className="flex gap-3 pt-3 border-t border-slate-100/50 dark:border-slate-900/50">
                 <button
                   type="submit"
                   disabled={trackMutation.isPending}
-                  className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-2.5 rounded-xl transition active:scale-[0.98] text-xs disabled:opacity-50"
+                  className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-black py-3 rounded-2xl transition active:scale-[0.98] text-xs disabled:opacity-50"
                 >
                   {trackMutation.isPending ? 'Salvando...' : editingEventId ? 'Atualizar' : 'Salvar Atividade'}
                 </button>
@@ -384,124 +599,19 @@ export const BrainDump = () => {
                     setShowLogForm(false);
                     setEditingEventId(null);
                   }}
-                  className="bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 font-bold py-2.5 px-4 rounded-xl transition text-slate-400 text-xs"
+                  className={`border font-black py-3 px-5 rounded-2xl transition text-xs ${
+                    isDarkMode 
+                      ? 'bg-slate-950 hover:bg-slate-900 border-slate-800 text-slate-400' 
+                      : 'bg-white hover:bg-slate-50 border-slate-250 text-slate-600'
+                  }`}
                 >
                   Cancelar
                 </button>
               </div>
             </form>
-          ) : (
-            <div className="text-center py-8 border border-dashed border-slate-800 rounded-2xl bg-slate-950/10">
-              <p className="text-slate-500 text-xs mb-4">Selecione uma tarefa abaixo ou registre manualmente:</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingEventId(null);
-                  setShowLogForm(true);
-                }}
-                className="bg-indigo-500 hover:bg-indigo-600 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs active:scale-[0.98] shadow-lg shadow-indigo-500/10"
-              >
-                Registrar Atividade Manual
-              </button>
-            </div>
-          )}
+          </div>
         </div>
-
-        {/* Histórico Completo de Eventos */}
-        <div className="backdrop-blur-xl bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 shadow-xl">
-          <h3 className="text-base font-bold text-white mb-5 flex items-center gap-2">
-            <span>📜</span>
-            <span>Fluxo de Atividades</span>
-          </h3>
-
-          {loadingEvents ? (
-            <div className="flex items-center justify-center py-12 space-y-2">
-              <svg className="animate-spin h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-            </div>
-          ) : events && events.length > 0 ? (
-            <div className="space-y-3.5 max-h-[480px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800">
-              {[...events].reverse().map((ev: UserActivityEvent) => (
-                <div 
-                  key={ev.id} 
-                  className={`p-4 border rounded-2xl bg-slate-950/20 flex flex-col gap-3 transition duration-200 hover:border-slate-800 ${
-                    ev.completed === true 
-                      ? 'border-emerald-500/10 hover:border-emerald-500/20' 
-                      : ev.completed === false 
-                        ? 'border-rose-500/10 hover:border-rose-500/20' 
-                        : 'border-slate-900 hover:border-slate-800'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-2">
-                      <p className="font-extrabold text-white leading-tight text-xs">{ev.description}</p>
-                      
-                      <div className="flex gap-1.5 flex-wrap">
-                        <span className="bg-slate-900 border border-slate-800/80 text-slate-400 px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider">
-                          {ev.category}
-                        </span>
-                        {ev.estimatedMinutes !== null && ev.estimatedMinutes !== undefined && ev.completed !== null && (
-                          <span className="bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-lg text-[9px] font-bold">
-                            🕒 {ev.estimatedMinutes}m
-                          </span>
-                        )}
-                        {ev.energyLevel !== null && ev.energyLevel !== undefined && ev.completed !== null && (
-                          <span className="bg-purple-500/10 border border-purple-500/20 text-purple-400 px-2 py-0.5 rounded-lg text-[9px] font-bold">
-                            ⚡ {ev.energyLevel}/10
-                          </span>
-                        )}
-                        {ev.mood && ev.completed !== null && (
-                          <span className="bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider">
-                            {ev.mood}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {ev.completed === true ? (
-                      <span className="px-2.5 py-0.5 rounded-full font-bold uppercase text-[8px] tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
-                        Concluída
-                      </span>
-                    ) : ev.completed === false ? (
-                      <span className="px-2.5 py-0.5 rounded-full font-bold uppercase text-[8px] tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/20 shrink-0">
-                        Abandonada
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded-full font-bold uppercase text-[8px] tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20 shrink-0 animate-pulse">
-                        Pendente
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Se a tarefa for pendente, exibe botões rápidos para registrar a conclusão/abandono */}
-                  {ev.completed === null && (
-                    <div className="flex gap-2.5 border-t border-slate-900/80 pt-2.5 mt-1">
-                      <button
-                        onClick={() => handleStartUpdateEvent(ev, true)}
-                        className="flex-1 py-1.5 px-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 hover:text-emerald-300 font-bold rounded-xl text-[9px] uppercase tracking-wider transition text-center flex items-center justify-center gap-1.5 active:scale-[0.97]"
-                      >
-                        ✔️ Concluir
-                      </button>
-                      <button
-                        onClick={() => handleStartUpdateEvent(ev, false)}
-                        className="flex-1 py-1.5 px-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 hover:text-rose-300 font-bold rounded-xl text-[9px] uppercase tracking-wider transition text-center flex items-center justify-center gap-1.5 active:scale-[0.97]"
-                      >
-                        ❌ Abandonar
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 text-slate-500 text-xs border border-dashed border-slate-800 rounded-3xl bg-slate-950/20">
-              Nenhuma atividade cadastrada. Digite um Brain Dump para gerar suas tarefas cognitivas!
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 };

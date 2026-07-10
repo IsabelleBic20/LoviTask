@@ -20,7 +20,7 @@ export interface UserActivityEvent {
   estimatedMinutes?: number;
   energyLevel?: number;
   mood?: string;
-  completed?: boolean;
+  completed?: boolean | null;
 }
 
 export interface PersonalizationMetrics {
