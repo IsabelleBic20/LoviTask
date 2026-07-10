@@ -11,7 +11,7 @@ export interface BrainDumpRequest {
 }
 
 export interface UserActivityEvent {
-  id: number;
+  id?: number;
   userId: string;
   eventType: string;
   timestamp: string;

@@ -9,5 +9,3 @@ README.md
 dist
 .vite
 .eslintcache
-postcss.config.ts
-tailwind.config.ts
