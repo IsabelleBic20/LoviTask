@@ -16,7 +16,14 @@ public class EfBehaviorRepository : IBehaviorRepository
 
     public void SaveEvent(UserActivityEvent activityEvent)
     {
-        _dbContext.UserActivityEvents.Add(activityEvent);
+        if (activityEvent.Id > 0)
+        {
+            _dbContext.UserActivityEvents.Update(activityEvent);
+        }
+        else
+        {
+            _dbContext.UserActivityEvents.Add(activityEvent);
+        }
         _dbContext.SaveChanges();
     }
 

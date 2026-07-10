@@ -6,8 +6,8 @@ WORKDIR /app
 # Copiar package files
 COPY package.json package-lock.json* ./
 
-# Instalar dependências
-RUN npm install
+# Instalar dependências de forma limpa e otimizada
+RUN npm ci --prefer-offline --no-audit --no-fund
 
 # Copiar código-fonte
 COPY . .

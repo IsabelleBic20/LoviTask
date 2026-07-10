@@ -138,10 +138,14 @@ npm run dev
 
 ## Produção
 
-Para build otimizado:
+Para build otimizado em ambiente de produção:
 
 ```bash
-docker compose -f docker-compose.prod.yml up --build
+docker compose -f docker-compose.prod.yml up --build -d
 ```
 
-(Ainda não existe `docker-compose.prod.yml` )
+O arquivo `docker-compose.prod.yml` foi configurado e traz as seguintes otimizações para produção:
+- **Limites de Recursos**: Restringe CPU e memória para cada container (`limits` e `reservations`).
+- **Políticas de Reinicialização**: Configura `restart: always` para manter os serviços ativos.
+- **Isolamento de Variáveis**: Força `APP_ENV=production` e `DEBUG_MODE=false` no backend.
+- **Rede e Volumes Independentes**: Utiliza volumes e redes dedicadas para produção (`lovitask-data-prod` e `lovitask-network-prod`), evitando conflitos com o ambiente de desenvolvimento.

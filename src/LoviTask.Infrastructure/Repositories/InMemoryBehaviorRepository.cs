@@ -9,6 +9,15 @@ public class InMemoryBehaviorRepository : IBehaviorRepository
 
     public void SaveEvent(UserActivityEvent activityEvent)
     {
+        if (activityEvent.Id > 0)
+        {
+            var index = _events.FindIndex(e => e.Id == activityEvent.Id);
+            if (index >= 0)
+            {
+                _events[index] = activityEvent;
+                return;
+            }
+        }
         _events.Add(activityEvent);
     }
 
