@@ -15,6 +15,14 @@ public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
 
+    // Lista estática de usuários cadastrados e suas senhas para validação
+    private static readonly Dictionary<string, string> ValidUsers = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "isabelle@lovitask.com", "123456" },
+        { "admin@lovitask.com", "admin123" },
+        { "convidado@lovitask.com", "convidado123" }
+    };
+
     public AuthController(IConfiguration configuration)
     {
         _configuration = configuration;
@@ -33,10 +41,10 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "E-mail e senha são obrigatórios." });
         }
 
-        // Validação de senha mínima para fins de demonstração
-        if (request.Password.Length < 6)
+        // Verifica se o e-mail existe no cadastro fictício e se a senha está correta
+        if (!ValidUsers.TryGetValue(request.Email, out var validPassword) || validPassword != request.Password)
         {
-            return Unauthorized(new { message = "A senha deve conter no mínimo 6 caracteres." });
+            return Unauthorized(new { message = "E-mail ou senha incorretos." });
         }
 
         var token = GenerateJwtToken(request.Email);
@@ -112,4 +120,15 @@ public class LoginRequest
     /// Senha do usuário.
     /// </summary>
     public string Password { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Modelo de requisição de login via Google.
+/// </summary>
+public class GoogleLoginRequest
+{
+    /// <summary>
+    /// E-mail retornado do Google.
+    /// </summary>
+    public string Email { get; set; } = string.Empty;
 }

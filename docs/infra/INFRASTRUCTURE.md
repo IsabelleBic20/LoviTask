@@ -6,7 +6,7 @@ Esta documentação detalha a arquitetura de infraestrutura do LoviTask, as conf
 
 ## 1. Arquitetura da Infraestrutura
 
-O LoviTask é estruturado em containers Docker, orchestrados pelo Docker Compose para desenvolvimento local e setups simples de produção.
+O LoviTask é estruturado em containers Docker, orquestrados pelo Docker Compose para desenvolvimento local e setups simples de produção.
 
 ### Fluxo de Dados e Componentes
 

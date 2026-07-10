@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fazer login com as Contas do Google</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #ffffff;
+      color: #202124;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: 450px;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      padding: 36px 40px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .logo {
+      margin-bottom: 16px;
+    }
+    .logo svg {
+      width: 75px;
+      height: 24px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 500;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+    .sub {
+      font-size: 16px;
+      color: #5f6368;
+      margin-bottom: 24px;
+    }
+    .account-list {
+      list-style: none;
+      text-align: left;
+      border-top: 1px solid #dadce0;
+      margin-bottom: 24px;
+    }
+    .account-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #dadce0;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .account-item:hover {
+      background-color: #f8f9fa;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #1a73e8;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+      margin-right: 12px;
+    }
+    .avatar-isabelle {
+      background-color: #9333ea;
+    }
+    .avatar-guest {
+      background-color: #0d9488;
+    }
+    .avatar-other {
+      background-color: #5f6368;
+    }
+    .info {
+      flex-grow: 1;
+    }
+    .name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .email {
+      font-size: 12px;
+      color: #5f6368;
+    }
+    .custom-input-container {
+      display: none;
+      text-align: left;
+      margin-top: 16px;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .custom-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    .custom-input:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+    }
+    .btn-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-primary {
+      background-color: #1a73e8;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #1557b0;
+    }
+    .btn-text {
+      background-color: transparent;
+      color: #1a73e8;
+    }
+    .btn-text:hover {
+      background-color: #f8f9fa;
+    }
+    #loader {
+      display: none;
+      padding: 40px 0;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1a73e8;
+      border-radius: 50%;
+      margin: 0 auto 16px auto;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .footer {
+      font-size: 12px;
+      color: #5f6368;
+      margin-top: 24px;
+      line-height: 1.5;
+    }
+    .footer a {
+      color: #1a73e8;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <!-- Google Logo -->
+    <div class="logo">
+      <svg viewBox="0 0 74 24" fill="currentColor">
+        <path d="M9.24 11.585V14.7h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.866-3.577-7.866-8s3.536-8 7.866-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C14.955 3.492 12.34 2.3 9.24 2.3 3.033 2.3-2 7.333-2 13.54s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.986 0-.74-.08-1.3-.177-1.862l-10.616-.307zm19.866-4.63h-6.26v14.72h6.26v-14.72zm-3.13-1.63a1.96 1.96 0 1 0 0-3.92 1.96 1.96 0 0 0 0 3.92zm17.917 1.63h-5.83v2.02h.08c.81-1.02 2.07-2.12 3.97-2.12 4.13 0 4.91 2.72 4.91 6.24v8.58h-6.26v-7.85c0-1.88-.04-4.29-2.61-4.29-2.62 0-3.02 2.05-3.02 4.16v7.98h-6.25v-14.72h5.83v2.02h.09c.81-1.02 2.07-2.12 3.97-2.12 4.13 0 4.91 2.72 4.91 6.24v8.58zm12.366-2.02c-4.9 0-8.91 3.75-8.91 8.96 0 5.21 4.01 8.96 8.91 8.96 4.9 0 8.91-3.75 8.91-8.96 0-5.21-4.01-8.96-8.91-8.96zm0 11.66c-2.43 0-4.32-2.01-4.32-4.66 0-2.65 1.89-4.66 4.32-4.66 2.43 0 4.32 2.01 4.32 4.66 0 2.65-1.89 4.66-4.32 4.66zm14.887-11.66c-4.9 0-8.91 3.75-8.91 8.96 0 5.21 4.01 8.96 8.91 8.96 2.21 0 4.15-.81 5.48-2.22h.09v1.94c0 3.42-1.83 5.25-4.78 5.25-2.42 0-3.92-1.74-4.48-3.23l-5.44 2.26c1.58 3.79 5.73 6.13 9.92 6.13 5.75 0 9.77-3.39 9.77-10.22v-14.72h-5.83v2.02h-.09c-1.33-1.41-3.27-2.22-5.48-2.22zm-.57 11.66c-2.43 0-4.32-2.01-4.32-4.66 0-2.65 1.89-4.66 4.32-4.66 2.43 0 4.32 2.01 4.32 4.66 0 2.65-1.89 4.66-4.32 4.66z" fill="#4285F4"/>
+      </svg>
+    </div>
+
+    <!-- Main Chooser -->
+    <div id="chooser">
+      <h1>Fazer login com o Google</h1>
+      <p class="sub">para continuar no LoviTask</p>
+
+      <ul class="account-list">
+        <li class="account-item" onclick="selectAccount('isabelle@lovitask.com')">
+          <div class="avatar avatar-isabelle">I</div>
+          <div class="info">
+            <div class="name">Isabelle Bic</div>
+            <div class="email">isabelle@lovitask.com</div>
+          </div>
+        </li>
+        <li class="account-item" onclick="selectAccount('convidado@lovitask.com')">
+          <div class="avatar avatar-guest">C</div>
+          <div class="info">
+            <div class="name">Convidado LoviTask</div>
+            <div class="email">convidado@lovitask.com</div>
+          </div>
+        </li>
+        <li class="account-item" onclick="showCustomInput()">
+          <div class="avatar avatar-other">
+            <svg style="width:18px;height:18px" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <div class="info">
+            <div class="name">Usar outra conta</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Custom Account Input -->
+    <div id="custom-account" class="custom-input-container">
+      <h1>Inserir e-mail do Google</h1>
+      <p class="sub" style="margin-bottom: 16px;">Insira qualquer endereço de e-mail</p>
+      
+      <input type="email" id="custom-email" class="custom-input" placeholder="nome@exemplo.com" required>
+      
+      <div class="btn-container">
+        <button class="btn btn-text" onclick="showChooser()">Voltar</button>
+        <button class="btn btn-primary" onclick="submitCustomEmail()">Avançar</button>
+      </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loader">
+      <div class="spinner"></div>
+      <p style="font-size:14px;color:#5f6368;">Conectando sua conta Google...</p>
+    </div>
+
+    <div class="footer">
+      Para continuar, o Google compartilhará seu nome, endereço de e-mail e foto do perfil com o aplicativo <b>LoviTask</b>.
+    </div>
+  </div>
+
+  <script>
+    function selectAccount(email) {
+      document.getElementById('chooser').style.display = 'none';
+      document.getElementById('custom-account').style.display = 'none';
+      document.getElementById('loader').style.display = 'block';
+      
+      setTimeout(() => {
+        if (window.opener) {
+          window.opener.postMessage({ type: 'GOOGLE_LOGIN_SUCCESS', email: email }, '*');
+        }
+        window.close();
+      }, 1000);
+    }
+
+    function showCustomInput() {
+      document.getElementById('chooser').style.display = 'none';
+      document.getElementById('custom-account').style.display = 'block';
+      document.getElementById('custom-email').focus();
+    }
+
+    function showChooser() {
+      document.getElementById('custom-account').style.display = 'none';
+      document.getElementById('chooser').style.display = 'block';
+    }
+
+    function submitCustomEmail() {
+      const email = document.getElementById('custom-email').value.trim();
+      if (!email) {
+        alert('Por favor, digite um e-mail válido.');
+        return;
+      }
+      if (!email.includes('@')) {
+        alert('Por favor, inclua um "@" no endereço de e-mail.');
+        return;
+      }
+      selectAccount(email);
+    }
+  </script>
+</body>
+</html>

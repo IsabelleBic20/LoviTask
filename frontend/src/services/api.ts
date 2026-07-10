@@ -36,6 +36,9 @@ export const loviTaskAPI = {
   login: (email: string, password: string): Promise<{ token: string; email: string; expiresAt: string }> =>
     api.post('/Auth/login', { email, password }).then((res) => res.data),
 
+  googleLogin: (email: string): Promise<{ token: string; email: string; expiresAt: string }> =>
+    api.post('/Auth/google', { email }).then((res) => res.data),
+
   // Brain Dump
   analyzeBrainDump: (request: BrainDumpRequest): Promise<MicrotaskSuggestion[]> =>
     api.post('/BrainDump/analyze', request).then((res) => res.data),
