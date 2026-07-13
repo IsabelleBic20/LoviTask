@@ -6,6 +6,7 @@ namespace LoviTask.Application.Interfaces;
 public interface IPersonalizationEngine
 {
     void TrackEvent(UserActivityEvent activityEvent);
-    CognitiveProfile BuildCognitiveProfile();
-    Recommendation[] GenerateRecommendations();
+    CognitiveProfile BuildCognitiveProfile(string userId);
+    PersonalizationMetrics BuildPersonalizationMetrics(string userId);
+    Recommendation[] GenerateRecommendations(string userId);
 }

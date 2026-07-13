@@ -2,6 +2,7 @@ namespace LoviTask.Domain.Events;
 
 public sealed class UserActivityEvent
 {
+    public int Id { get; init; }
     public string UserId { get; init; } = string.Empty;
     public string EventType { get; init; } = string.Empty;
     public DateTime Timestamp { get; init; }
