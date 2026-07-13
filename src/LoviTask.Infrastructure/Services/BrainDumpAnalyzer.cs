@@ -16,6 +16,44 @@ public class BrainDumpAnalyzer : IBrainDumpAnalyzer
         "depois", "mais tarde", "fim de semana", "quando puder", "um dia", "mais adiante"
     };
 
+    private static readonly System.Text.RegularExpressions.Regex EmotionalPreambleRegex = new(
+        @"^(?:estou\b\s+(?:muito\b\s+|super\b\s+|meio\b\s+|bem\b\s+)?(?:ansioso|ansiosa|preocupado|preocupada|estressado|estressada|cansado|cansada|nervoso|nervosa|tenso|tensa|desanimado|desanimada)\b[\s,]*)+",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    private static readonly System.Text.RegularExpressions.Regex HelperVerbRegex = new(
+        @"^(?:preciso|tenho\s+que|tenho\s+de|quero|gostaria\s+de|devo|vou|não\s+(?:posso\s+)?esquecer\s+de|lembrar\s+de|esquecer\s+de)\b[\s,]+(?=\b\w+(?:ar|er|ir|ôr)\b)",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    private static readonly System.Text.RegularExpressions.Regex LeadingFillersRegex = new(
+        @"^(?:porque|pois|já\s+que|ja\s+que|como|mas|também|tambem|que|e)\b[\s,]*",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    private static readonly System.Text.RegularExpressions.Regex DespairOrEmotionalRegex = new(
+        @"^(?:não\s+sei\s+por\s+onde\s+começar|nao\s+sei\s+por\s+onde\s+começar|não\s+sei\s+o\s+que\s+fazer|nao\s+sei\s+o\s+que\s+fazer|estou\s+perdido|estou\s+perdida|estou\s+confuso|estou\s+confusa|sem\s+saber\s+por\s+onde\s+começar|sem\s+saber\s+o\s+que\s+fazer|não\s+sei\s+como\s+fazer|nao\s+sei\s+como\s+fazer|estou\s+sem\s+rumo|não\s+consigo\s+me\s+organizar|nao\s+consigo\s+me\s+organizar|não\s+sei|nao\s+sei|estou\s+ansioso|estou\s+ansiosa|estou\s+preocupado|estou\s+preocupada|estou\s+estressado|estou\s+estressada|estou\s+cansado|estou\s+cansada|estou\s+nervoso|estou\s+nervosa|estou\s+tenso|estou\s+tensa|estou\s+desanimado|estou\s+desanimada)$",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    private static string CleanPart(string part)
+    {
+        if (string.IsNullOrWhiteSpace(part)) return string.Empty;
+
+        string previous;
+        do
+        {
+            previous = part;
+            part = EmotionalPreambleRegex.Replace(part, "").Trim();
+            part = LeadingFillersRegex.Replace(part, "").Trim();
+            part = HelperVerbRegex.Replace(part, "").Trim();
+        } while (part != previous);
+
+        return part;
+    }
+
+    private static bool IsDespairOrEmotional(string part)
+    {
+        return DespairOrEmotionalRegex.IsMatch(part);
+    }
+
+
     public MicrotaskSuggestion[] AnalyzeBrainDump(BrainDumpContext context)
     {
         if (context is null || string.IsNullOrWhiteSpace(context.Text))
@@ -52,12 +90,120 @@ public class BrainDumpAnalyzer : IBrainDumpAnalyzer
 
     private static string[] ExtractIdeas(string brainDumpText)
     {
-        return brainDumpText
-            .Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
-            .SelectMany(line => line.Split(new[] { '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries))
+        if (string.IsNullOrWhiteSpace(brainDumpText)) return System.Array.Empty<string>();
+
+        // 1. Dividir primeiro por quebra de linha e pontuações fortes (. ! ?)
+        var lines = brainDumpText
+            .Split(new[] { '\n', '\r', '.', '!', '?' }, System.StringSplitOptions.RemoveEmptyEntries)
             .Select(line => line.Trim())
-            .Where(line => line.Length > 0)
-            .ToArray();
+            .Where(line => line.Length > 0);
+
+        var finalIdeas = new System.Collections.Generic.List<string>();
+
+        // 2. Para cada linha, quebrar usando conectores comuns que indicam múltiplas tarefas
+        // Conectores: " e também ", " bem como ", " além de ", " depois de ", " depois ", " e ", ",", ";"
+        var connectorsRegex = new System.Text.RegularExpressions.Regex(
+            @"\s+(?:e\s+também|bem\s+como|além\s+de|depois\s+de|depois|e)\s+|[,;]\s*",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        foreach (var line in lines)
+        {
+            var cleanedLine = CleanPart(line);
+
+            if (cleanedLine.Length == 0 || IsDespairOrEmotional(cleanedLine)) continue;
+
+            var parts = connectorsRegex.Split(cleanedLine)
+                .Select(p => p.Trim())
+                .Where(p => p.Length > 0)
+                .ToArray();
+
+            if (parts.Length == 0) continue;
+
+            // O primeiro item define o contexto e a ação inicial
+            var firstPart = CleanPart(parts[0]);
+            if (firstPart.Length >= 3 && !IsDespairOrEmotional(firstPart))
+            {
+                var capitalizedFirst = char.ToUpper(firstPart[0]) + firstPart[1..];
+                finalIdeas.Add(capitalizedFirst);
+            }
+
+            if (parts.Length > 1)
+            {
+                var prefix = GetSharedPrefix(firstPart);
+                for (int i = 1; i < parts.Length; i++)
+                {
+                    var part = CleanPart(parts[i]);
+                    if (!ContainsVerb(part))
+                    {
+                        // Se não contém verbo, reconstrói usando o prefixo da primeira parte
+                        part = prefix + " " + part;
+                    }
+                    part = CleanPart(part);
+                    if (part.Length >= 3 && !IsDespairOrEmotional(part))
+                    {
+                        var capitalized = char.ToUpper(part[0]) + part[1..];
+                        finalIdeas.Add(capitalized);
+                    }
+                }
+            }
+        }
+
+        if (!finalIdeas.Any())
+        {
+            foreach (var line in lines)
+            {
+                var cleaned = CleanPart(line);
+                if (cleaned.Length >= 3 && !IsDespairOrEmotional(cleaned))
+                {
+                    finalIdeas.Add(char.ToUpper(cleaned[0]) + cleaned[1..]);
+                }
+            }
+        }
+
+        return finalIdeas.ToArray();
+    }
+
+    private static bool ContainsVerb(string text)
+    {
+        // Heurística para verbos em português no contexto de lista de tarefas:
+        // Palavras terminadas em ar, er, ir, ou ôr (como pôr), excluindo substantivos comuns.
+        var verbRegex = new System.Text.RegularExpressions.Regex(
+            @"\b(?!celular\b|lugar\b|par\b|lar\b|mar\b|ar\b|professor\b|mulher\b|computador\b|dor\b|amor\b)\w+(?:ar|er|ir|ôr)\b",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        return verbRegex.IsMatch(text);
+    }
+
+    private static string GetSharedPrefix(string part)
+    {
+        var words = part.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length <= 1)
+        {
+            return part;
+        }
+
+        var connectionWords = new System.Collections.Generic.HashSet<string>(System.StringComparer.OrdinalIgnoreCase)
+        {
+            "para", "de", "com", "em", "sobre", "do", "da", "no", "na", "ao", "à", "pelo", "pela", "a", "o", "os", "as"
+        };
+
+        // Encontrar a última palavra de conexão que não seja a última palavra da frase
+        int lastConnectionIndex = -1;
+        for (int i = 0; i < words.Length - 1; i++)
+        {
+            if (connectionWords.Contains(words[i]))
+            {
+                lastConnectionIndex = i;
+            }
+        }
+
+        if (lastConnectionIndex != -1)
+        {
+            return string.Join(" ", words.Take(lastConnectionIndex + 1));
+        }
+
+        // Caso padrão: assume o primeiro termo (geralmente o verbo principal)
+        return words[0];
     }
 
     private static MicrotaskSuggestion CreateSuggestion(string idea, BrainDumpContext context)

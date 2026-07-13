@@ -15,7 +15,7 @@ public class PersonalizationEngineTests
         var metricsProvider = new PersonalizationMetricsProvider();
         var engine = new PersonalizationEngine(repository, NullBrainDumpAiProvider.Instance, metricsProvider);
 
-        var profile = engine.BuildCognitiveProfile();
+        var profile = engine.BuildCognitiveProfile("user-1");
 
         Assert.NotNull(profile);
         Assert.Equal(string.Empty, profile.UserId);
@@ -58,7 +58,7 @@ public class PersonalizationEngineTests
             Completed = false
         });
 
-        var metrics = engine.BuildPersonalizationMetrics();
+        var metrics = engine.BuildPersonalizationMetrics("user-1");
 
         Assert.Equal(2, metrics.TotalEvents);
         Assert.Equal(1, metrics.CompletedEvents);
@@ -93,7 +93,7 @@ public class PersonalizationEngineTests
             });
         }
 
-        var recommendations = engine.GenerateRecommendations();
+        var recommendations = engine.GenerateRecommendations("user-2");
 
         Assert.NotEmpty(recommendations);
         Assert.Contains(recommendations, recommendation => recommendation.Title.Contains("vitórias rápidas") || recommendation.Title.Contains("microtarefas") || recommendation.Category == "Motivação");

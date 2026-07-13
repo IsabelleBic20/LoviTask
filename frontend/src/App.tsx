@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BrainDump } from './components/BrainDump';
-import { Metrics } from './components/Metrics';
+import { CognitiveDashboard } from './components/CognitiveDashboard';
 import { Profile } from './components/Profile';
 import { Login } from './components/Login';
+import { RecommendationsAndEnergy } from './components/RecommendationsAndEnergy';
+import { SmartPlanning } from './components/SmartPlanning';
+import { ProcrastinationPredictions } from './components/ProcrastinationPredictions';
 import { loviTaskAPI } from './services/api';
 import './index.css';
 
 const queryClient = new QueryClient();
 
 function DashboardWrapper() {
-  const [activeTab, setActiveTab] = useState<'brain-dump' | 'metrics' | 'profile'>('brain-dump');
+  const [activeTab, setActiveTab] = useState<'brain-dump' | 'metrics' | 'profile' | 'recommendations' | 'smart-planning' | 'predictions'>('brain-dump');
   const [userEmail, setUserEmail] = useState('');
   const [mood, setMood] = useState<'calmo' | 'neutro' | 'ansioso' | 'cansado'>('neutro');
 
@@ -56,6 +59,12 @@ function DashboardWrapper() {
   const { data: events } = useQuery({
     queryKey: ['events'],
     queryFn: loviTaskAPI.getEvents,
+  });
+
+  const { data: cognitiveLoad } = useQuery({
+    queryKey: ['cognitive-load'],
+    queryFn: loviTaskAPI.getCognitiveLoad,
+    refetchInterval: 10000,
   });
 
   const completedCount = events?.filter(e => e.completed === true).length || 0;
@@ -173,7 +182,46 @@ function DashboardWrapper() {
               }`}
             >
               <span>🌱</span>
-              <span>Perfil</span>
+              <span>Perfil Cognitivo</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('recommendations')}
+              className={`px-4 py-2 rounded-xl font-black text-xs transition-all duration-200 flex items-center gap-1.5 ${
+                activeTab === 'recommendations'
+                  ? 'bg-indigo-650 text-white shadow-md shadow-indigo-500/10 scale-[1.015]'
+                  : isDarkMode 
+                    ? 'text-slate-400 hover:text-white hover:bg-slate-800/20' 
+                    : 'text-slate-655 hover:text-slate-900 hover:bg-slate-300/30'
+              }`}
+            >
+              <span>💡</span>
+              <span>Recomendações</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('smart-planning')}
+              className={`px-4 py-2 rounded-xl font-black text-xs transition-all duration-200 flex items-center gap-1.5 ${
+                activeTab === 'smart-planning'
+                  ? 'bg-indigo-650 text-white shadow-md shadow-indigo-500/10 scale-[1.015]'
+                  : isDarkMode 
+                    ? 'text-slate-400 hover:text-white hover:bg-slate-800/20' 
+                    : 'text-slate-655 hover:text-slate-900 hover:bg-slate-300/30'
+              }`}
+            >
+              <span>📅</span>
+              <span>Planejamento</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('predictions')}
+              className={`px-4 py-2 rounded-xl font-black text-xs transition-all duration-200 flex items-center gap-1.5 ${
+                activeTab === 'predictions'
+                  ? 'bg-indigo-650 text-white shadow-md shadow-indigo-500/10 scale-[1.015]'
+                  : isDarkMode 
+                    ? 'text-slate-400 hover:text-white hover:bg-slate-800/20' 
+                    : 'text-slate-655 hover:text-slate-900 hover:bg-slate-300/30'
+              }`}
+            >
+              <span>🔮</span>
+              <span>Previsões</span>
             </button>
           </nav>
 
@@ -317,9 +365,12 @@ function DashboardWrapper() {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
-              {activeTab === 'brain-dump' && <BrainDump isDarkMode={isDarkMode} />}
-              {activeTab === 'metrics' && <Metrics isDarkMode={isDarkMode} />}
+              {activeTab === 'brain-dump' && <BrainDump isDarkMode={isDarkMode} crisisMode={cognitiveLoad ? cognitiveLoad.score >= 80 : false} />}
+              {activeTab === 'metrics' && <CognitiveDashboard isDarkMode={isDarkMode} />}
               {activeTab === 'profile' && <Profile isDarkMode={isDarkMode} />}
+              {activeTab === 'recommendations' && <RecommendationsAndEnergy isDarkMode={isDarkMode} />}
+              {activeTab === 'smart-planning' && <SmartPlanning isDarkMode={isDarkMode} />}
+              {activeTab === 'predictions' && <ProcrastinationPredictions isDarkMode={isDarkMode} />}
             </motion.div>
           </AnimatePresence>
         </div>

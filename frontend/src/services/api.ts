@@ -6,6 +6,10 @@ import {
   PersonalizationMetrics,
   CognitiveProfile,
   Recommendation,
+  UserTask,
+  CognitiveLoadResult,
+  PredictionResult,
+  CognitiveHistoryDay,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '');
@@ -56,11 +60,49 @@ export const loviTaskAPI = {
 
   // Profile
   getProfile: (): Promise<CognitiveProfile> =>
-    api.get('/Personalization/profile').then((res) => res.data),
+    api.get('/Cognitive/profile').then((res) => res.data),
+
+  recalculateProfile: (): Promise<CognitiveProfile> =>
+    api.post('/Cognitive/profile/recalculate').then((res) => res.data),
 
   // Recommendations
   getRecommendations: (): Promise<Recommendation[]> =>
-    api.get('/Personalization/recommendations').then((res) => res.data),
+    api.get('/recommendations').then((res) => res.data),
+
+  // Cognitive Load
+  getCognitiveLoad: (): Promise<CognitiveLoadResult> =>
+    api.get('/Cognitive/load').then((res) => res.data),
+
+  // Register Energy
+  registerEnergy: (energyLevel: number): Promise<void> =>
+    api.post('/energy', { energyLevel }),
+
+  // Tasks
+  getTasks: (): Promise<UserTask[]> =>
+    api.get('/tasks').then((res) => res.data),
+
+  createTask: (task: UserTask): Promise<UserTask[]> =>
+    api.post('/tasks', task).then((res) => res.data),
+
+  rebuildSchedule: (): Promise<{ message: string }> =>
+    api.post('/planning/rebuild').then((res) => res.data),
+
+  completeTask: (id: number, actualMinutes?: number): Promise<UserTask> =>
+    api.post(`/tasks/${id}/complete`, { actualMinutes }).then((res) => res.data),
+
+  delayTask: (id: number): Promise<{ message: string; task: UserTask }> =>
+    api.post(`/tasks/${id}/delay`).then((res) => res.data),
+
+  // Predictions
+  getPredictions: (): Promise<PredictionResult[]> =>
+    api.get('/predictions').then((res) => res.data),
+
+  optimizeTask: (id: number): Promise<{ message: string; task: UserTask }> =>
+    api.post(`/tasks/${id}/optimize`).then((res) => res.data),
+
+  // Cognitive History
+  getCognitiveHistory: (days?: number): Promise<CognitiveHistoryDay[]> =>
+    api.get(`/cognitive/history`, { params: { days } }).then((res) => res.data),
 };
 
 export default api;

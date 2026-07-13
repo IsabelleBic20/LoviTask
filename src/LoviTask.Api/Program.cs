@@ -99,6 +99,14 @@ builder.Services.AddSingleton<IBrainDumpAiProvider, BrainDumpAiProvider>();
 builder.Services.AddSingleton<IBrainDumpAnalyzer, BrainDumpAnalyzer>();
 builder.Services.AddScoped<IPersonalizationMetricsProvider, PersonalizationMetricsProvider>();
 builder.Services.AddScoped<IPersonalizationEngine, PersonalizationEngine>();
+builder.Services.AddScoped<ICognitiveProfileRepository, EfCognitiveProfileRepository>();
+builder.Services.AddScoped<ICognitiveProfileService, CognitiveProfileService>();
+builder.Services.AddScoped<ICognitiveLoadService, CognitiveLoadService>();
+builder.Services.AddScoped<IExplainabilityEngine, ExplainabilityEngine>();
+builder.Services.AddScoped<IRecommendationEngine, RecommendationEngine>();
+builder.Services.AddScoped<ITaskRepository, EfTaskRepository>();
+builder.Services.AddScoped<IPlanningEngine, PlanningEngine>();
+builder.Services.AddScoped<IPredictionEngine, PredictionEngine>();
 
 var app = builder.Build();
 

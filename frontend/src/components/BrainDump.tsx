@@ -6,9 +6,10 @@ import { MicrotaskSuggestion, UserActivityEvent } from '../types';
 
 interface BrainDumpProps {
   isDarkMode: boolean;
+  crisisMode?: boolean;
 }
 
-export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
+export const BrainDump = ({ isDarkMode, crisisMode = false }: BrainDumpProps) => {
   const queryClient = useQueryClient();
 
   // Brain Dump States
@@ -46,6 +47,81 @@ export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
         deadline: deadline || undefined,
       }),
     onSuccess: async (data) => {
+      const inferCategory = (title: string, defaultGoal?: string): string => {
+        const t = title.toLowerCase();
+        
+        // Estudos
+        if (
+          t.includes('estudar') || 
+          t.includes('estudo') || 
+          t.includes('poscomp') || 
+          t.includes('unicamp') || 
+          t.includes('universidade') || 
+          t.includes('faculdade') || 
+          t.includes('aula') || 
+          t.includes('prova') || 
+          t.includes('curso') || 
+          t.includes('ler') || 
+          t.includes('leitura') || 
+          t.includes('livro')
+        ) {
+          return 'Estudos';
+        }
+        
+        // Casa / Rotina
+        if (
+          t.includes('lavar') || 
+          t.includes('roupa') || 
+          t.includes('limpar') || 
+          t.includes('casa') || 
+          t.includes('cozinha') || 
+          t.includes('louça') || 
+          t.includes('supermercado') || 
+          t.includes('compras') || 
+          t.includes('organizar') || 
+          t.includes('arrumar')
+        ) {
+          return 'Casa';
+        }
+        
+        // Saúde
+        if (
+          t.includes('academia') || 
+          t.includes('treino') || 
+          t.includes('correr') || 
+          t.includes('exercício') || 
+          t.includes('exercicio') || 
+          t.includes('malhar') || 
+          t.includes('médico') || 
+          t.includes('medico') || 
+          t.includes('consulta') || 
+          t.includes('saúde') || 
+          t.includes('saude') || 
+          t.includes('terapia')
+        ) {
+          return 'Saúde';
+        }
+        
+        // Trabalho
+        if (
+          t.includes('trabalho') || 
+          t.includes('reunião') || 
+          t.includes('reuniao') || 
+          t.includes('projeto') || 
+          t.includes('cliente') || 
+          t.includes('relatório') || 
+          t.includes('relatorio') || 
+          t.includes('enviar') || 
+          t.includes('orçamento') || 
+          t.includes('orcamento') || 
+          t.includes('proposta')
+        ) {
+          return 'Trabalho';
+        }
+
+        return defaultGoal || 'Trabalho';
+      };
+
       // Salva automaticamente cada microtarefa sugerida no banco como pendente (completed: null)
       if (data && data.length > 0) {
         for (const task of data) {
@@ -55,7 +131,7 @@ export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
               eventType: 'task',
               timestamp: new Date().toISOString(),
               description: task.title,
-              category: goal || 'Trabalho',
+              category: inferCategory(task.title, goal || undefined),
               completed: null, // Fica nulo/pendente no banco de dados
             });
           } catch (err) {
@@ -301,7 +377,7 @@ export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
         <div className="lg:col-span-2 space-y-8">
           
           {/* Playful Brain Dump Box */}
-          <div className={`${cardClass} !p-0 border-indigo-50/70`}>
+          <div className={`${cardClass} !p-0 border-indigo-50/70 !overflow-visible`}>
             {isDarkMode && <div className="absolute top-0 right-0 w-36 h-36 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />}
             
             {/* Header info */}
@@ -320,22 +396,33 @@ export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
               </div>
             </div>
 
+            {crisisMode && (
+              <div className="p-5 m-6 rounded-[24px] bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold leading-relaxed flex items-start gap-3">
+                <span className="text-xl">🧘</span>
+                <div>
+                  <strong className="block text-sm font-black mb-1">Modo Crise Ativado</strong>
+                  Sua sobrecarga cognitiva está crítica. Escondemos suas tarefas futuras e limitamos novas criações para poupar sua energia mental. Foque apenas nas duas tarefas essenciais abaixo e tire pausas frequentes.
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleBrainDumpSubmit} className="p-6 space-y-6">
               {/* Speck bubble textarea container */}
-              <div className={`border rounded-[24px] focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent transition overflow-hidden shadow-inner ${
+              <div className={`border rounded-[24px] focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent transition relative shadow-inner ${
                 isDarkMode ? 'border-slate-850 bg-slate-950/45' : 'border-indigo-100/55 bg-indigo-50/10'
               }`}>
                 <textarea
                   value={brainDumpText}
                   onChange={(e) => setBrainDumpText(e.target.value)}
-                  placeholder="Escreva tudo o que está ocupando sua mente agora... ideias soltas, compromissos pendentes, ansiedades ou tarefas que você precisa fazer."
-                  className={notebookInputClass}
+                  disabled={crisisMode}
+                  placeholder={crisisMode ? "O planejamento de novas tarefas está desabilitado no Modo Crise. Descanse um pouco!" : "Escreva tudo o que está ocupando sua mente agora... ideias soltas, compromissos pendentes, ansiedades ou tarefas que você precisa fazer."}
+                  className={`${notebookInputClass} ${crisisMode ? 'opacity-65 cursor-not-allowed' : ''}`}
                   rows={6}
                   aria-label="Área de Brain Dump"
                 />
                 
                 {/* Meta details integrated at the bottom of the writing area */}
-                <div className={`p-4 border-t flex flex-wrap items-center justify-between gap-4 ${isDarkMode ? 'border-slate-850/60 bg-slate-950/80' : 'border-indigo-50/60 bg-indigo-50/20'}`}>
+                <div className={`p-4 border-t flex flex-wrap items-center justify-between gap-4 rounded-b-[23px] ${isDarkMode ? 'border-slate-850/60 bg-slate-950/80' : 'border-indigo-50/60 bg-indigo-50/20'}`}>
                   {/* Category Chips Selector */}
                   <div className="space-y-2 flex-1 min-w-[200px]">
                     <span className="block text-[9px] font-black uppercase tracking-wider text-indigo-500">
@@ -381,137 +468,21 @@ export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
                     </div>
                   </div>
 
-                  {/* Custom Popover Datepicker (Notion / Linear style) */}
-                  <div className="space-y-2 relative datepicker-container min-w-[180px]">
+                  {/* Native Datepicker (Robust & Accessible) */}
+                  <div className="space-y-2 min-w-[180px]">
                     <span className="block text-[9px] font-black uppercase tracking-wider text-indigo-500">
                       📅 Quando?
                     </span>
-                    
-                    {/* Trigger Button */}
-                    <button
-                      type="button"
-                      onClick={() => setShowDatePickerPopover(!showDatePickerPopover)}
+                    <input
+                      type="datetime-local"
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
                       className={`text-xs font-black border rounded-2xl px-4 py-2.5 flex items-center justify-between gap-3 focus:outline-none transition-all w-full text-left shadow-sm ${
                         isDarkMode 
-                          ? 'bg-slate-950 border-slate-855 text-slate-200 hover:border-slate-800' 
-                          : 'bg-white border-indigo-150 text-slate-855 hover:bg-slate-50'
+                          ? 'bg-slate-950 border-slate-855 text-slate-200 hover:border-slate-800 focus:ring-2 focus:ring-indigo-500' 
+                          : 'bg-white border-indigo-150 text-slate-855 hover:bg-slate-50 focus:ring-2 focus:ring-indigo-500'
                       }`}
-                    >
-                      <span className="truncate">{getHumanDeadlineLabel(deadline)}</span>
-                      <span className="text-[10px] text-slate-400">▼</span>
-                    </button>
-
-                    {/* Popover Calendar container */}
-                    <AnimatePresence>
-                      {showDatePickerPopover && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          className={`absolute bottom-full right-0 mb-3 z-50 p-4 border rounded-[28px] shadow-2xl w-72 ${
-                            isDarkMode ? 'bg-[#121124] border-slate-855 text-white' : 'bg-white border-indigo-50 text-slate-850'
-                          }`}
-                        >
-                          {/* Calendar Month Selector Header */}
-                          <div className="flex items-center justify-between mb-3.5">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (currentCalendarMonth === 0) {
-                                  setCurrentCalendarMonth(11);
-                                  setCurrentCalendarYear(currentCalendarYear - 1);
-                                } else {
-                                  setCurrentCalendarMonth(currentCalendarMonth - 1);
-                                }
-                              }}
-                              className={`p-1 rounded-lg text-slate-400 transition ${isDarkMode ? 'hover:bg-slate-900' : 'hover:bg-slate-100'}`}
-                            >
-                              ◀
-                            </button>
-                            <span className="text-xs font-black tracking-tight select-none">
-                              {getMonthName(currentCalendarMonth)} {currentCalendarYear}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (currentCalendarMonth === 11) {
-                                  setCurrentCalendarMonth(0);
-                                  setCurrentCalendarYear(currentCalendarYear + 1);
-                                } else {
-                                  setCurrentCalendarMonth(currentCalendarMonth + 1);
-                                }
-                              }}
-                              className={`p-1 rounded-lg text-slate-400 transition ${isDarkMode ? 'hover:bg-slate-900' : 'hover:bg-slate-100'}`}
-                            >
-                              ▶
-                            </button>
-                          </div>
-
-                          {/* Weekdays Labels */}
-                          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black text-indigo-500 mb-2 select-none">
-                            {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((wd, i) => (
-                              <span key={i}>{wd}</span>
-                            ))}
-                          </div>
-
-                          {/* Calendar Days Grid */}
-                          <div className="grid grid-cols-7 gap-1 text-center mb-4">
-                            {Array.from({ length: getFirstDayOfMonth(currentCalendarMonth, currentCalendarYear) }).map((_, i) => (
-                              <span key={`empty-${i}`} />
-                            ))}
-                            {Array.from({ length: getDaysInMonth(currentCalendarMonth, currentCalendarYear) }).map((_, i) => {
-                              const dayNum = i + 1;
-                              const isSelected = deadline && new Date(deadline).getDate() === dayNum && 
-                                                new Date(deadline).getMonth() === currentCalendarMonth && 
-                                                new Date(deadline).getFullYear() === currentCalendarYear;
-                              return (
-                                <button
-                                  key={`day-${dayNum}`}
-                                  type="button"
-                                  onClick={() => handleSelectDay(dayNum)}
-                                  className={`h-7 w-7 text-xs font-bold rounded-lg flex items-center justify-center transition ${
-                                    isSelected 
-                                      ? 'bg-indigo-655 text-white shadow-sm font-black' 
-                                      : isDarkMode
-                                        ? 'hover:bg-slate-900 text-slate-200' 
-                                        : 'hover:bg-indigo-50/70 text-slate-850'
-                                  }`}
-                                >
-                                  {dayNum}
-                                </button>
-                              );
-                            })}
-                          </div>
-
-                          {/* Presets Separator */}
-                          <div className="border-t border-slate-100/60 dark:border-slate-800/60 my-3" />
-
-                          {/* Shortcuts preset list */}
-                          <div className="space-y-1 text-left">
-                            {[
-                              { id: 'today', label: '⚡ Hoje', action: () => handleSelectPreset('today') },
-                              { id: 'tomorrow', label: '🌅 Amanhã', action: () => handleSelectPreset('tomorrow') },
-                              { id: 'weekend', label: '📅 Este fim de semana', action: () => handleSelectPreset('weekend') },
-                              { id: 'nextWeek', label: '➡ Próxima semana', action: () => handleSelectPreset('nextWeek') },
-                              { id: 'clear', label: '🚫 Sem prazo', action: () => handleSelectPreset('clear') }
-                            ].map(preset => (
-                              <button
-                                key={preset.id}
-                                type="button"
-                                onClick={preset.action}
-                                className={`w-full text-left px-3 py-1.5 rounded-xl text-[10px] font-black transition ${
-                                  isDarkMode
-                                    ? 'hover:bg-slate-900 text-slate-350 hover:text-white'
-                                    : 'hover:bg-indigo-50/50 text-slate-655 hover:text-indigo-650'
-                                }`}
-                              >
-                                {preset.label}
-                              </button>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    />
                   </div>
                 </div>
               </div>
@@ -528,10 +499,12 @@ export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
-                  disabled={analyzeMutation.isPending}
+                  disabled={analyzeMutation.isPending || crisisMode}
                   className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 py-4 rounded-2xl shadow-md shadow-indigo-500/10 transition disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 text-xs uppercase tracking-wider"
                 >
-                  {analyzeMutation.isPending ? (
+                  {crisisMode ? (
+                    <span>🔒 Planejamento Limitado</span>
+                  ) : analyzeMutation.isPending ? (
                     <>
                       <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -627,7 +600,22 @@ export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
               </div>
             ) : events && events.length > 0 ? (
               <div className="space-y-3.5 max-h-[520px] overflow-y-auto pr-1">
-                {[...events].reverse().map((ev: UserActivityEvent, idx: number) => (
+                {(() => {
+                  const displayedEvents = crisisMode
+                    ? [...events].reverse().filter(ev => ev.completed === null || ev.completed === undefined).slice(0, 2)
+                    : [...events].reverse();
+
+                  if (displayedEvents.length === 0) {
+                    return (
+                      <div className={`text-center py-12 text-xs border border-dashed rounded-3xl font-semibold ${
+                        isDarkMode ? 'border-slate-800 bg-slate-950/20 text-slate-500' : 'border-slate-350 bg-slate-50 text-slate-400'
+                      }`}>
+                        Nenhuma microtarefa pendente no momento. Excelente! Aproveite para descansar.
+                      </div>
+                    );
+                  }
+
+                  return displayedEvents.map((ev: UserActivityEvent, idx: number) => (
                   <motion.div 
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -717,7 +705,8 @@ export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
                       </div>
                     )}
                   </motion.div>
-                ))}
+                ));
+              })()}
               </div>
             ) : (
               <div className={`text-center py-12 text-xs border border-dashed rounded-3xl font-semibold ${
@@ -731,8 +720,9 @@ export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
       </div>
 
       {/* Floating Action Button (FAB) + Modal overlay */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
+      {!crisisMode && (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => {
           setEditingEventId(null);
@@ -752,6 +742,7 @@ export const BrainDump = ({ isDarkMode }: BrainDumpProps) => {
           Registrar Atividade
         </span>
       </motion.button>
+      )}
 
       {/* Modal Dialog Form */}
       <AnimatePresence>

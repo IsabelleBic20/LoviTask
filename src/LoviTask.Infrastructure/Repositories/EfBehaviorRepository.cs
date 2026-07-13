@@ -18,7 +18,15 @@ public class EfBehaviorRepository : IBehaviorRepository
     {
         if (activityEvent.Id > 0)
         {
-            _dbContext.UserActivityEvents.Update(activityEvent);
+            var existing = _dbContext.UserActivityEvents.FirstOrDefault(e => e.Id == activityEvent.Id);
+            if (existing != null)
+            {
+                _dbContext.Entry(existing).CurrentValues.SetValues(activityEvent);
+            }
+            else
+            {
+                _dbContext.UserActivityEvents.Add(activityEvent);
+            }
         }
         else
         {
